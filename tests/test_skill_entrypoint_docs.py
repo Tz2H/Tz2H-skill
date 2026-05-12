@@ -38,9 +38,8 @@ class SkillEntrypointDocsTest(unittest.TestCase):
         self.assertNotIn("`/list-skills`", content)
         self.assertNotIn("Compatibility aliases:", content)
 
-    def test_readme_and_install_use_dot_skill_paths(self) -> None:
+    def test_readme_contains_usage_only_dot_skill_paths(self) -> None:
         readme = (ROOT / "README.md").read_text(encoding="utf-8")
-        install = (ROOT / "INSTALL.md").read_text(encoding="utf-8")
         skill = (ROOT / "SKILL.md").read_text(encoding="utf-8")
 
         self.assertIn(".claude/skills/dot-skill", readme)
@@ -49,23 +48,17 @@ class SkillEntrypointDocsTest(unittest.TestCase):
         self.assertIn("/dot-skill", readme)
         self.assertIn("./skills/colleague", readme)
 
-        self.assertIn(".claude/skills/dot-skill", install)
-        self.assertIn("~/.openclaw/workspace/skills/dot-skill", install)
-        self.assertIn("~/.codex/skills/dot-skill", install)
-        self.assertIn("/dot-skill", install)
-        self.assertIn("./skills/colleague", install)
         self.assertIn("install_claude_generated_skill.py", readme)
-        self.assertIn("install_claude_generated_skill.py", install)
         self.assertIn("install_openclaw_generated_skill.py", readme)
-        self.assertIn("install_openclaw_generated_skill.py", install)
         self.assertIn("install_codex_generated_skill.py", readme)
-        self.assertIn("install_codex_generated_skill.py", install)
-        self.assertIn("install_openclaw_skill.py", install)
-        self.assertIn("install_codex_skill.py", install)
-        self.assertIn("/{character}-{slug}", install)
+        self.assertIn("install_openclaw_skill.py", readme)
+        self.assertIn("install_codex_skill.py", readme)
+        self.assertIn("/{character}-{slug}", readme)
         self.assertIn("./skills/colleague", skill)
-        self.assertIn("compatible hosts", readme.lower())
-        self.assertIn("兼容宿主", install)
+        self.assertIn("兼容宿主", readme)
+        self.assertFalse((ROOT / "INSTALL.md").exists())
+        self.assertFalse((ROOT / "ROADMAP.md").exists())
+        self.assertFalse((ROOT / "CONTRIBUTING.md").exists())
 
     def test_repo_examples_live_under_skills_colleague(self) -> None:
         self.assertTrue((ROOT / "skills" / "colleague" / "example_zhangsan").exists())
@@ -73,20 +66,10 @@ class SkillEntrypointDocsTest(unittest.TestCase):
         self.assertTrue((ROOT / "skills" / "colleague" / "example_jiaxiu").exists())
         self.assertFalse((ROOT / "colleagues").exists())
 
-    def test_multilingual_readmes_include_dot_skill_and_research_toolchain(self) -> None:
-        for readme_path in (ROOT / "docs" / "lang").glob("README_*.md"):
-            content = readme_path.read_text(encoding="utf-8")
-            self.assertIn("/dot-skill", content, f"missing /dot-skill in {readme_path.name}")
-            self.assertIn(
-                "tools/install_hermes_skill.py --force",
-                content,
-                f"missing Hermes installer in {readme_path.name}",
-            )
-            self.assertIn(
-                "tools/research/quality_check.py",
-                content,
-                f"missing celebrity research toolchain in {readme_path.name}",
-            )
+    def test_upstream_docs_have_been_removed(self) -> None:
+        self.assertFalse((ROOT / "docs").exists())
+        self.assertFalse((ROOT / "colleague_skill.pdf").exists())
+        self.assertFalse((ROOT / "openarena-claim.txt").exists())
 
 
 if __name__ == "__main__":
