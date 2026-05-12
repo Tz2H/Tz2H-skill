@@ -2,8 +2,8 @@
 """
 Skill artifact writer.
 
-This module writes work/persona artifacts for the dot-skill engine while
-preserving backward compatibility with the original colleague-centric layout.
+This module writes work/persona artifacts for the Tz2H-skill engine while
+preserving backward compatibility with the original character-family layout.
 """
 
 from __future__ import annotations
@@ -495,7 +495,7 @@ def install_generated_hosts(
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="dot-skill artifact writer")
+    parser = argparse.ArgumentParser(description="Tz2H-skill artifact writer")
     parser.add_argument("--action", required=True, choices=["create", "update", "list"])
     parser.add_argument("--slug", help="Skill slug used for the output directory")
     parser.add_argument("--name", help="Display name for the skill")
@@ -544,7 +544,7 @@ def main() -> None:
 
     args = parser.parse_args()
     requested_character = normalize_character(args.character or args.type)
-    auto_install_default = os.environ.get("DOT_SKILL_AUTO_INSTALL_CLAUDE", "1") != "0"
+    auto_install_default = os.environ.get("TZ2H_SKILL_AUTO_INSTALL_CLAUDE", "1") != "0"
     install_claude_skill = (
         args.install_claude_skill or auto_install_default
     ) and not args.no_install_claude_skill

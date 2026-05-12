@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Helpers for the shared dot-skill engine schema and generated artifact metadata.
+Helpers for the shared Tz2H-skill engine schema and generated artifact metadata.
 """
 
 from __future__ import annotations
@@ -151,7 +151,7 @@ def sync_legacy_fields(meta: dict) -> dict:
 
 
 def enrich_skill_meta(meta: dict, slug: str, character: str | None = None) -> dict:
-    """Upgrade legacy metadata to the dot-skill engine schema."""
+    """Upgrade legacy metadata to the Tz2H-skill engine schema."""
     result = deepcopy(meta)
     resolved_character = resolve_character(result, character)
     preset = get_character_preset(resolved_character)
@@ -197,7 +197,7 @@ def enrich_skill_meta(meta: dict, slug: str, character: str | None = None) -> di
         **result.get("artifacts", {}),
     }
 
-    engine.setdefault("name", "dot-skill")
+    engine.setdefault("name", "Tz2H-skill")
     engine.setdefault("kind", "meta-skill")
     engine.setdefault("character", resolved_character)
     engine.setdefault("research_profile", resolved_research_profile)
@@ -212,7 +212,7 @@ def enrich_skill_meta(meta: dict, slug: str, character: str | None = None) -> di
     if preset.get("research_tools"):
         engine.setdefault("research_tools", preset["research_tools"])
 
-    generation.setdefault("engine", "dot-skill")
+    generation.setdefault("engine", "Tz2H-skill")
     generation.setdefault("character", resolved_character)
     generation.setdefault("research_profile", resolved_research_profile)
     generation.setdefault("preset", result["preset"])

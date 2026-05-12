@@ -6,10 +6,10 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 class SkillEntrypointDocsTest(unittest.TestCase):
-    def test_root_skill_uses_dot_skill_entrypoint(self) -> None:
+    def test_root_skill_uses_tz2h_skill_entrypoint(self) -> None:
         content = (ROOT / "SKILL.md").read_text(encoding="utf-8")
-        self.assertIn("name: dot-skill", content)
-        self.assertIn("`/dot-skill`", content)
+        self.assertIn("name: Tz2H-skill", content)
+        self.assertIn("`/Tz2H-skill`", content)
         self.assertIn("兼容宿主", content)
         self.assertIn("compatible hosts", content.lower())
         self.assertIn("管理操作", content)
@@ -30,7 +30,7 @@ class SkillEntrypointDocsTest(unittest.TestCase):
         self.assertIn("Unique URLs >= 8", content)
         self.assertIn("Primary-source markers >= 3", content)
         self.assertIn("research_audit.md", content)
-        self.assertIn("--work-patch /tmp/dot_skill_{slug}_work_patch.md", content)
+        self.assertIn("--work-patch /tmp/tz2h_skill_{slug}_work_patch.md", content)
         self.assertIn("Do not hand-edit `work.md`", content)
         self.assertIn("~/.openclaw/...", content)
         self.assertIn("~/.codex/...", content)
@@ -38,14 +38,14 @@ class SkillEntrypointDocsTest(unittest.TestCase):
         self.assertNotIn("`/list-skills`", content)
         self.assertNotIn("Compatibility aliases:", content)
 
-    def test_readme_contains_usage_only_dot_skill_paths(self) -> None:
+    def test_readme_contains_usage_only_tz2h_skill_paths(self) -> None:
         readme = (ROOT / "README.md").read_text(encoding="utf-8")
         skill = (ROOT / "SKILL.md").read_text(encoding="utf-8")
 
-        self.assertIn(".claude/skills/dot-skill", readme)
-        self.assertIn("~/.openclaw/workspace/skills/dot-skill", readme)
-        self.assertIn("~/.codex/skills/dot-skill", readme)
-        self.assertIn("/dot-skill", readme)
+        self.assertIn(".claude/skills/Tz2H-skill", readme)
+        self.assertIn("~/.openclaw/workspace/skills/Tz2H-skill", readme)
+        self.assertIn("~/.codex/skills/Tz2H-skill", readme)
+        self.assertIn("/Tz2H-skill", readme)
         self.assertIn("./skills/colleague", readme)
 
         self.assertIn("install_claude_generated_skill.py", readme)

@@ -5,7 +5,7 @@ Slack 自动采集器
 输入同事的 Slack 姓名/用户名，自动：
   1. 搜索 Slack 用户，获取 user_id
   2. 找到与 Bot 共同的频道，拉取该用户发出的消息
-  3. 输出统一格式，直接进 create-colleague 分析流程
+  3. 输出统一格式，直接进 Tz2H-skill 分析流程
 
 前置：
   python3 slack_auto_collector.py --setup   # 配置 Bot Token（一次性）
@@ -54,7 +54,7 @@ except ImportError:
 
 # ─── 常量 ──────────────────────────────────────────────────────────────────────
 
-CONFIG_PATH = Path.home() / ".colleague-skill" / "slack_config.json"
+CONFIG_PATH = Path.home() / ".Tz2H-skill" / "slack_config.json"
 
 # Slack 频道类型（采集范围）
 CHANNEL_TYPES = "public_channel,private_channel,mpim,im"

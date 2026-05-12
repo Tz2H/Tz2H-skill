@@ -9,7 +9,7 @@
   4. 搜索他创建/编辑的文档和 Wiki
   5. 拉取文档内容
   6. 拉取多维表格（如有）
-  7. 输出统一格式，直接进 create-colleague 分析流程
+  7. 输出统一格式，直接进 Tz2H-skill 分析流程
 
 前置：
   python3 feishu_auto_collector.py --setup   # 配置 App ID / Secret（一次性）
@@ -56,7 +56,7 @@ except ImportError:
     sys.exit(1)
 
 
-CONFIG_PATH = Path.home() / ".colleague-skill" / "feishu_config.json"
+CONFIG_PATH = Path.home() / ".Tz2H-skill" / "feishu_config.json"
 BASE_URL = "https://open.feishu.cn/open-apis"
 
 

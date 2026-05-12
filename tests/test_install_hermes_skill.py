@@ -17,10 +17,10 @@ class HermesInstallTest(unittest.TestCase):
     def test_install_skill_copies_repo_layout(self) -> None:
         with tempfile.TemporaryDirectory() as tmp_dir:
             source = Path(tmp_dir) / "source"
-            destination = Path(tmp_dir) / "dest" / "dot-skill"
+            destination = Path(tmp_dir) / "dest" / "Tz2H-skill"
             source.mkdir()
-            (source / "SKILL.md").write_text("name: dot-skill\n", encoding="utf-8")
-            (source / "README.md").write_text("# dot-skill\n", encoding="utf-8")
+            (source / "SKILL.md").write_text("name: Tz2H-skill\n", encoding="utf-8")
+            (source / "README.md").write_text("# Tz2H-skill\n", encoding="utf-8")
 
             installed = install_skill(source, destination)
             self.assertEqual(installed, destination)
@@ -30,9 +30,9 @@ class HermesInstallTest(unittest.TestCase):
     def test_install_skill_dry_run_does_not_write(self) -> None:
         with tempfile.TemporaryDirectory() as tmp_dir:
             source = Path(tmp_dir) / "source"
-            destination = Path(tmp_dir) / "dest" / "dot-skill"
+            destination = Path(tmp_dir) / "dest" / "Tz2H-skill"
             source.mkdir()
-            (source / "SKILL.md").write_text("name: dot-skill\n", encoding="utf-8")
+            (source / "SKILL.md").write_text("name: Tz2H-skill\n", encoding="utf-8")
 
             install_skill(source, destination, dry_run=True)
             self.assertFalse(destination.exists())
@@ -40,10 +40,10 @@ class HermesInstallTest(unittest.TestCase):
     def test_install_skill_dry_run_allows_existing_destination(self) -> None:
         with tempfile.TemporaryDirectory() as tmp_dir:
             source = Path(tmp_dir) / "source"
-            destination = Path(tmp_dir) / "dest" / "dot-skill"
+            destination = Path(tmp_dir) / "dest" / "Tz2H-skill"
             source.mkdir(parents=True)
             destination.mkdir(parents=True)
-            (source / "SKILL.md").write_text("name: dot-skill\n", encoding="utf-8")
+            (source / "SKILL.md").write_text("name: Tz2H-skill\n", encoding="utf-8")
 
             result = install_skill(source, destination, dry_run=True)
             self.assertEqual(result, destination)

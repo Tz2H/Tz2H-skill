@@ -1,5 +1,5 @@
 ---
-name: dot-skill
+name: Tz2H-skill
 description: "Unified meta-skill engine for distilling colleague, relationship, or celebrity characters into reusable Skills. | 统一的 meta-skill 引擎，把 colleague、relationship、celebrity 三类对象蒸馏成可复用 Skill。"
 argument-hint: "[character] [name-or-slug]"
 version: "1.0.0"
@@ -7,22 +7,22 @@ user-invocable: true
 allowed-tools: Read, Write, Edit, Bash
 ---
 
-> **Language / 语言**: This skill supports both English and Chinese. Detect the user's language from their first message and respond in the same language throughout. Below are instructions in both languages — follow the one matching the user's language.
+> **Language / 语言**: This skill supports both English and Chinese. Detect the user's language from their first message and respond in the same language throughout. The instructions below are primarily in Chinese; when the user writes in English, follow the same steps but reply in English.
 >
-> 本 Skill 支持中英文。根据用户第一条消息的语言，全程使用同一语言回复。下方提供了两种语言的指令，按用户语言选择对应版本执行。
+> 本 Skill 支持中英文。根据用户第一条消息的语言，全程使用同一语言回复。以下指令以中文为主；若用户使用英文，执行同样流程但用英文回复。
 
 > **Execution Root / 执行根目录**: Run all `Bash` commands from the directory that contains this `SKILL.md`. All `tools/...` and `prompts/...` paths below are relative to the skill root.
 >
-> **Critical rule / 关键规则**: Do **not** prepend commands with guessed host-specific paths such as `cd ~/.hermes/...`, `cd ~/.claude/...`, `cd ~/.openclaw/...`, `cd ~/.codex/...`, or hard-coded `/Users/.../dot-skill` paths. The current working directory is already the correct skill root. Run `python3 tools/...` directly.
+> **Critical rule / 关键规则**: Do **not** prepend commands with guessed host-specific paths such as `cd ~/.hermes/...`, `cd ~/.claude/...`, `cd ~/.openclaw/...`, `cd ~/.codex/...`, or hard-coded `/Users/.../Tz2H-skill` paths. The current working directory is already the correct skill root. Run `python3 tools/...` directly.
 >
 > 所有 `Bash` 命令都必须在当前 `SKILL.md` 所在目录执行。下文出现的 `tools/...` 和 `prompts/...` 均为相对于 skill 根目录的相对路径。
 
-# dot-skill 创建器（兼容宿主版）
+# Tz2H-skill 创建器（兼容宿主版）
 
 ## 触发条件
 
 当用户说以下任意内容时启动：
-- `/dot-skill`
+- `/Tz2H-skill`
 - "帮我创建一个 skill"
 - "我想蒸馏一个人"
 - "新建一个 skill"
@@ -34,8 +34,8 @@ allowed-tools: Read, Write, Edit, Bash
 - Hermes
 - Codex
 
-统一主入口是 `dot-skill`。在支持 slash command 的宿主中，使用 `/dot-skill`。
-对 Hermes 而言，只保证 `/dot-skill` 这一条 slash 入口稳定；`colleague`、`relationship`、`celebrity` 的兼容语义保留在工具层和 preset 层，但不保证每个兼容名称都能作为 Hermes slash command 被路由。
+统一主入口是 `Tz2H-skill`。在支持 slash command 的宿主中，使用 `/Tz2H-skill`。
+对 Hermes 而言，只保证 `/Tz2H-skill` 这一条 slash 入口稳定；`colleague`、`relationship`、`celebrity` 的兼容语义保留在工具层和 preset 层，但不保证每个兼容名称都能作为 Hermes slash command 被路由。
 
 当用户对已有 Skill 说以下内容时，进入进化模式：
 - "我有新文件" / "追加"
@@ -81,7 +81,7 @@ allowed-tools: Read, Write, Edit, Bash
 
 ### Step 0：确认 character family
 
-如果用户使用的是 `/dot-skill`，先确认本次要蒸馏的是哪一类：
+如果用户使用的是 `/Tz2H-skill`，先确认本次要蒸馏的是哪一类：
 
 1. `colleague`
 2. `relationship`
@@ -584,9 +584,9 @@ Persona 摘要：
    - `relationship` → `./skills/relationship`
    - `celebrity` → `./skills/celebrity`
 2. 用 `Write` 工具写三个临时文件：
-   - `/tmp/dot_skill_{slug}_meta.json`
-   - `/tmp/dot_skill_{slug}_work.md`
-   - `/tmp/dot_skill_{slug}_persona.md`
+   - `/tmp/tz2h_skill_{slug}_meta.json`
+   - `/tmp/tz2h_skill_{slug}_work.md`
+   - `/tmp/tz2h_skill_{slug}_persona.md`
 3. `meta.json` 至少包含：
    - `name`
    - `display_name`
@@ -604,9 +604,9 @@ Persona 摘要：
      --research-profile {research_profile} \
      --slug {slug} \
      --name "{name}" \
-     --meta /tmp/dot_skill_{slug}_meta.json \
-     --work /tmp/dot_skill_{slug}_work.md \
-     --persona /tmp/dot_skill_{slug}_persona.md \
+     --meta /tmp/tz2h_skill_{slug}_meta.json \
+     --work /tmp/tz2h_skill_{slug}_work.md \
+     --persona /tmp/tz2h_skill_{slug}_persona.md \
      --base-dir {resolved_base_dir}
    ```
 5. 该命令会统一生成：
@@ -659,8 +659,8 @@ Persona 摘要：
      --action update \
      --character {character} \
      --slug {slug} \
-     --work-patch /tmp/dot_skill_{slug}_work_patch.md \
-     --persona-patch /tmp/dot_skill_{slug}_persona_patch.md \
+     --work-patch /tmp/tz2h_skill_{slug}_work_patch.md \
+     --persona-patch /tmp/tz2h_skill_{slug}_persona_patch.md \
      --base-dir {resolved_base_dir}
    ```
 8. 如果当前是 `celebrity`，更新后再次执行 quality check
@@ -674,7 +674,7 @@ Persona 摘要：
 1. 参考 `prompts/correction_handler.md` 识别纠正内容
 2. 判断属于 Work（技术/流程）还是 Persona（性格/沟通）
 3. 如果属于 Work：
-   - 生成 `/tmp/dot_skill_{slug}_work_patch.md`
+   - 生成 `/tmp/tz2h_skill_{slug}_work_patch.md`
    - patch 必须是可替换的 `##` section，不要直接手改最终文件
    - 调用：
      ```bash
@@ -682,11 +682,11 @@ Persona 摘要：
        --action update \
        --character {character} \
        --slug {slug} \
-       --work-patch /tmp/dot_skill_{slug}_work_patch.md \
+       --work-patch /tmp/tz2h_skill_{slug}_work_patch.md \
        --base-dir {resolved_base_dir}
      ```
 4. 如果属于 Persona：
-   - 将 correction 写入 `/tmp/dot_skill_{slug}_correction.json`
+   - 将 correction 写入 `/tmp/tz2h_skill_{slug}_correction.json`
    - 单条纠正可直接写成 `{scene, wrong, correct}`
    - 多条 persona 纠正可写成 `{"persona_corrections": [{...}, {...}]}`
    - 调用：
@@ -695,7 +695,7 @@ Persona 摘要：
        --action update \
        --character {character} \
        --slug {slug} \
-       --correction-json /tmp/dot_skill_{slug}_correction.json \
+       --correction-json /tmp/tz2h_skill_{slug}_correction.json \
        --base-dir {resolved_base_dir}
      ```
 5. 如果当前是 `celebrity`，更新后再次执行 quality check
@@ -742,12 +742,12 @@ rm -rf skills/celebrity/{slug}
 
 # English Version
 
-# dot-skill Creator (Compatible Host Edition)
+# Tz2H-skill Creator (Compatible Host Edition)
 
 ## Trigger Conditions
 
 Activate when the user says any of the following:
-- `/dot-skill`
+- `/Tz2H-skill`
 - "Help me create a skill"
 - "I want to distill someone"
 - "Create a new skill"
@@ -759,8 +759,8 @@ Compatible hosts:
 - Hermes
 - Codex
 
-The canonical entrypoint is `dot-skill`. In hosts that expose slash commands, use `/dot-skill`.
-Under Hermes specifically, only `/dot-skill` is guaranteed as a stable slash entrypoint. Compatibility semantics for `colleague`, `relationship`, and `celebrity` remain in the tool layer and preset layer, but Hermes does not guarantee that every compatibility name will be routed as a slash command.
+The canonical entrypoint is `Tz2H-skill`. In hosts that expose slash commands, use `/Tz2H-skill`.
+Under Hermes specifically, only `/Tz2H-skill` is guaranteed as a stable slash entrypoint. Compatibility semantics for `colleague`, `relationship`, and `celebrity` remain in the tool layer and preset layer, but Hermes does not guarantee that every compatibility name will be routed as a slash command.
 
 Enter evolution mode when the user says:
 - "I have new files" / "append"
@@ -806,7 +806,7 @@ For a global path, use `--base-dir` with the storage root for that character fam
 
 ### Step 0: Confirm the character family
 
-If the user entered `/dot-skill`, first confirm which family should be distilled:
+If the user entered `/Tz2H-skill`, first confirm which family should be distilled:
 
 1. `colleague`
 2. `relationship`
@@ -1310,9 +1310,9 @@ After user confirmation, do not hand-build a `skills/colleague/{slug}`-style tre
    - `relationship` → `./skills/relationship`
    - `celebrity` → `./skills/celebrity`
 2. Use the `Write` tool to create three temporary files:
-   - `/tmp/dot_skill_{slug}_meta.json`
-   - `/tmp/dot_skill_{slug}_work.md`
-   - `/tmp/dot_skill_{slug}_persona.md`
+   - `/tmp/tz2h_skill_{slug}_meta.json`
+   - `/tmp/tz2h_skill_{slug}_work.md`
+   - `/tmp/tz2h_skill_{slug}_persona.md`
 3. The temporary meta file must include at least:
    - `name`
    - `display_name`
@@ -1330,9 +1330,9 @@ After user confirmation, do not hand-build a `skills/colleague/{slug}`-style tre
      --research-profile {research_profile} \
      --slug {slug} \
      --name "{name}" \
-     --meta /tmp/dot_skill_{slug}_meta.json \
-     --work /tmp/dot_skill_{slug}_work.md \
-     --persona /tmp/dot_skill_{slug}_persona.md \
+     --meta /tmp/tz2h_skill_{slug}_meta.json \
+     --work /tmp/tz2h_skill_{slug}_work.md \
+     --persona /tmp/tz2h_skill_{slug}_persona.md \
      --base-dir {resolved_base_dir}
    ```
 5. This command will generate:
@@ -1385,8 +1385,8 @@ When user provides new files or text:
      --action update \
      --character {character} \
      --slug {slug} \
-     --work-patch /tmp/dot_skill_{slug}_work_patch.md \
-     --persona-patch /tmp/dot_skill_{slug}_persona_patch.md \
+     --work-patch /tmp/tz2h_skill_{slug}_work_patch.md \
+     --persona-patch /tmp/tz2h_skill_{slug}_persona_patch.md \
      --base-dir {resolved_base_dir}
    ```
 8. If the current family is `celebrity`, run the quality check again after the update
@@ -1400,7 +1400,7 @@ When user expresses "that's wrong" / "he should be":
 1. Refer to `prompts/correction_handler.md` to identify correction content
 2. Determine if it belongs to Work (technical/workflow) or Persona (personality/communication)
 3. If it belongs to Work:
-   - Generate `/tmp/dot_skill_{slug}_work_patch.md`
+   - Generate `/tmp/tz2h_skill_{slug}_work_patch.md`
    - The patch must be one or more replaceable `##` sections
    - Call:
      ```bash
@@ -1408,11 +1408,11 @@ When user expresses "that's wrong" / "he should be":
        --action update \
        --character {character} \
        --slug {slug} \
-       --work-patch /tmp/dot_skill_{slug}_work_patch.md \
+       --work-patch /tmp/tz2h_skill_{slug}_work_patch.md \
        --base-dir {resolved_base_dir}
      ```
 4. If it belongs to Persona:
-   - Write the correction record to `/tmp/dot_skill_{slug}_correction.json`
+   - Write the correction record to `/tmp/tz2h_skill_{slug}_correction.json`
    - For a single correction, write `{scene, wrong, correct}`
    - For multiple persona corrections, write `{"persona_corrections": [{...}, {...}]}`
    - Call:
@@ -1421,7 +1421,7 @@ When user expresses "that's wrong" / "he should be":
        --action update \
        --character {character} \
        --slug {slug} \
-       --correction-json /tmp/dot_skill_{slug}_correction.json \
+       --correction-json /tmp/tz2h_skill_{slug}_correction.json \
        --base-dir {resolved_base_dir}
      ```
 5. If the current family is `celebrity`, run the quality check again after the update

@@ -56,7 +56,7 @@ class SkillWriterTest(unittest.TestCase):
             self.assertEqual(saved_meta["schema_version"], "3")
             self.assertEqual(saved_meta["kind"], "meta-skill")
             self.assertEqual(saved_meta["character"], "colleague")
-            self.assertEqual(saved_meta["preset"], "dot.colleague.v1")
+            self.assertEqual(saved_meta["preset"], "tz2h.colleague.v1")
             self.assertEqual(saved_meta["type"], "colleague")
             self.assertEqual(saved_meta["id"], "meta-skill.colleague.zhangsan")
             self.assertEqual(saved_meta["artifacts"]["combined_name"], "colleague_zhangsan")
@@ -64,7 +64,7 @@ class SkillWriterTest(unittest.TestCase):
             self.assertEqual(saved_meta["compat"]["legacy_command"], "/create-colleague")
             self.assertEqual(manifest["kind"], "meta-skill")
             self.assertEqual(manifest["character"], "colleague")
-            self.assertEqual(manifest["preset"], "dot.colleague.v1")
+            self.assertEqual(manifest["preset"], "tz2h.colleague.v1")
             self.assertEqual(manifest["install"]["slash_commands"]["default"], "colleague-zhangsan")
             self.assertEqual(
                 manifest["install"]["compatible_runtimes"],
@@ -110,7 +110,7 @@ class SkillWriterTest(unittest.TestCase):
 
             self.assertEqual(saved_meta["kind"], "meta-skill")
             self.assertEqual(saved_meta["character"], "relationship")
-            self.assertEqual(saved_meta["preset"], "dot.relationship.v1")
+            self.assertEqual(saved_meta["preset"], "tz2h.relationship.v1")
             self.assertEqual(saved_meta["type"], "relationship")
             self.assertEqual(saved_meta["classification"]["gallery_category"], "Relationship")
             self.assertEqual(saved_meta["compat"]["legacy_storage_root"], "skills/relationship")
@@ -173,7 +173,7 @@ class SkillWriterTest(unittest.TestCase):
             manifest = json.loads((skill_dir / "manifest.json").read_text(encoding="utf-8"))
 
             self.assertEqual(saved_meta["character"], "celebrity")
-            self.assertEqual(saved_meta["preset"], "dot.celebrity.v1")
+            self.assertEqual(saved_meta["preset"], "tz2h.celebrity.v1")
             self.assertEqual(saved_meta["research_profile"], "budget-friendly")
             self.assertIn("research_tools", saved_meta["engine"])
             self.assertEqual(saved_meta["engine"]["research_profile"], "budget-friendly")

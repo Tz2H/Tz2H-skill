@@ -7,7 +7,7 @@
   2. 搜索他创建/编辑的文档和知识库内容
   3. 拉取多维表格（如有）
   4. 消息记录（API 不支持历史拉取，自动切换浏览器方案）
-  5. 输出统一格式，直接进 create-colleague 分析流程
+  5. 输出统一格式，直接进 Tz2H-skill 分析流程
 
 钉钉限制说明：
   钉钉 Open API 不提供历史消息拉取接口，
@@ -42,7 +42,7 @@ except ImportError:
     sys.exit(1)
 
 
-CONFIG_PATH = Path.home() / ".colleague-skill" / "dingtalk_config.json"
+CONFIG_PATH = Path.home() / ".Tz2H-skill" / "dingtalk_config.json"
 API_BASE = "https://api.dingtalk.com"
 
 

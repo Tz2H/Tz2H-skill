@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Install the current dot-skill repo into the local Codex skill directory."""
+"""Install the current Tz2H-skill repo into the local Codex skill directory."""
 
 from __future__ import annotations
 
@@ -30,7 +30,7 @@ def install_skill(source: Path, destination: Path, force: bool = False, dry_run:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Install dot-skill into Codex")
+    parser = argparse.ArgumentParser(description="Install Tz2H-skill into Codex")
     parser.add_argument(
         "--source",
         default=str(Path(__file__).resolve().parents[1]),
@@ -38,7 +38,7 @@ def main() -> None:
     )
     parser.add_argument(
         "--dest",
-        default=str(Path.home() / ".codex" / "skills" / "dot-skill"),
+        default=str(Path.home() / ".codex" / "skills" / "Tz2H-skill"),
         help="Destination Codex skill directory",
     )
     parser.add_argument("--force", action="store_true", help="Overwrite the destination if needed")

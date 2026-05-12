@@ -1,12 +1,12 @@
-# Tz2H Skill
+# Tz2H-skill
 
-这是一个基于 `colleague-skill / dot-skill` fork 后用于二次开发的本地 Skill 项目。当前仓库已清理上游项目的宣传、路线图、多语言文档和社区资料，只保留运行、安装、开发所需的最小使用说明。
+这是一个用于二次开发的本地 Skill 项目。当前仓库已清理上游项目的宣传、路线图、多语言文档和社区资料，只保留运行、安装、开发所需的最小使用说明。
 
 ## 环境要求
 
 - Python 3.9+
 - 可选：Node.js 16+，仅在使用飞书 MCP 方案时需要
-- 可选：Playwright Chromium，僅在使用飞书浏览器采集方案时需要
+- 可选：Playwright Chromium，仅在使用飞书浏览器采集方案时需要
 
 安装基础依赖：
 
@@ -33,19 +33,19 @@ npm install -g feishu-mcp
 
 ```bash
 mkdir -p .claude/skills
-git clone <this-repo-url> .claude/skills/dot-skill
+git clone <this-repo-url> .claude/skills/Tz2H-skill
 ```
 
 安装到全局：
 
 ```bash
-git clone <this-repo-url> ~/.claude/skills/dot-skill
+git clone <this-repo-url> ~/.claude/skills/Tz2H-skill
 ```
 
 安装后在 Claude Code 中使用：
 
 ```text
-/dot-skill
+/Tz2H-skill
 ```
 
 ### OpenClaw
@@ -59,14 +59,14 @@ python3 tools/install_openclaw_skill.py --force
 或者直接 clone：
 
 ```bash
-git clone <this-repo-url> ~/.openclaw/workspace/skills/dot-skill
+git clone <this-repo-url> ~/.openclaw/workspace/skills/Tz2H-skill
 ```
 
 ### Hermes
 
 ```bash
 python3 tools/install_hermes_skill.py --force
-hermes skills list | rg dot-skill
+hermes skills list | rg Tz2H-skill
 ```
 
 如需预览安装目标：
@@ -84,17 +84,17 @@ python3 tools/install_codex_skill.py --force
 或者直接 clone：
 
 ```bash
-git clone <this-repo-url> ~/.codex/skills/dot-skill
+git clone <this-repo-url> ~/.codex/skills/Tz2H-skill
 ```
 
-Codex 中没有固定 slash 入口，安装后它会把 `dot-skill` 作为本地 skill 发现。
+Codex 中没有固定 slash 入口，安装后它会把 `Tz2H-skill` 作为本地 skill 发现。
 
 ## 使用方法
 
 在支持 slash command 的宿主中启动：
 
 ```text
-/dot-skill
+/Tz2H-skill
 ```
 
 启动后按提示选择要生成的角色类型：

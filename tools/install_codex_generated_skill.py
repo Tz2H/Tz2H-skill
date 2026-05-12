@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Install a generated dot-skill artifact into Codex discovery paths."""
+"""Install a generated Tz2H-skill artifact into Codex discovery paths."""
 
 from __future__ import annotations
 
@@ -32,7 +32,7 @@ def install_generated_skill(
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Install a generated dot-skill into Codex")
+    parser = argparse.ArgumentParser(description="Install a generated Tz2H-skill into Codex")
     parser.add_argument("--skill-dir", required=True, help="Generated skill directory")
     parser.add_argument(
         "--codex-skills-dir",

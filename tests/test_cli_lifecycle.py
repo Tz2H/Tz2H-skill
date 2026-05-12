@@ -21,7 +21,7 @@ class CliLifecycleTest(unittest.TestCase):
         env: dict[str, str] | None = None,
     ) -> subprocess.CompletedProcess[str]:
         merged_env = os.environ.copy()
-        merged_env.setdefault("DOT_SKILL_AUTO_INSTALL_CLAUDE", "0")
+        merged_env.setdefault("TZ2H_SKILL_AUTO_INSTALL_CLAUDE", "0")
         if env:
             merged_env.update(env)
         return subprocess.run(

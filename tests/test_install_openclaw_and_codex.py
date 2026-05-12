@@ -23,11 +23,11 @@ class OpenClawAndCodexInstallTest(unittest.TestCase):
             tmp_root = Path(tmp_dir)
             source = tmp_root / "source"
             source.mkdir()
-            (source / "SKILL.md").write_text("name: dot-skill\n", encoding="utf-8")
-            (source / "README.md").write_text("# dot-skill\n", encoding="utf-8")
+            (source / "SKILL.md").write_text("name: Tz2H-skill\n", encoding="utf-8")
+            (source / "README.md").write_text("# Tz2H-skill\n", encoding="utf-8")
 
-            openclaw_dest = tmp_root / "openclaw" / "dot-skill"
-            codex_dest = tmp_root / "codex" / "dot-skill"
+            openclaw_dest = tmp_root / "openclaw" / "Tz2H-skill"
+            codex_dest = tmp_root / "codex" / "Tz2H-skill"
 
             installed_openclaw = install_openclaw_skill(source, openclaw_dest)
             installed_codex = install_codex_skill(source, codex_dest)
@@ -61,7 +61,7 @@ class OpenClawAndCodexInstallTest(unittest.TestCase):
             )
 
             installed_file = openclaw_skills / "relationship-mireille" / "SKILL.md"
-            metadata_file = openclaw_skills / "relationship-mireille" / ".dot-skill-install.json"
+            metadata_file = openclaw_skills / "relationship-mireille" / ".Tz2H-skill-install.json"
 
             self.assertEqual(result["command_name"], "relationship-mireille")
             self.assertTrue(installed_file.exists())
@@ -96,7 +96,7 @@ class OpenClawAndCodexInstallTest(unittest.TestCase):
             )
 
             installed_file = codex_skills / "celebrity-zhou-qimo" / "SKILL.md"
-            metadata_file = codex_skills / "celebrity-zhou-qimo" / ".dot-skill-install.json"
+            metadata_file = codex_skills / "celebrity-zhou-qimo" / ".Tz2H-skill-install.json"
 
             self.assertEqual(result["command_name"], "celebrity-zhou-qimo")
             self.assertTrue(installed_file.exists())

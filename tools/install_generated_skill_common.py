@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Shared helpers for installing generated dot-skill artifacts into host skill roots."""
+"""Shared helpers for installing generated Tz2H-skill artifacts into host skill roots."""
 
 from __future__ import annotations
 
@@ -62,7 +62,7 @@ def render_installed_markdown(skill_dir: Path, artifact_name: str, command_name:
 
 def write_install_metadata(install_dir: Path, payload: dict) -> None:
     """Persist installation metadata for later debugging and upgrades."""
-    (install_dir / ".dot-skill-install.json").write_text(
+    (install_dir / ".Tz2H-skill-install.json").write_text(
         json.dumps(payload, ensure_ascii=False, indent=2),
         encoding="utf-8",
     )
