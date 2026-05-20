@@ -8,7 +8,6 @@ import tempfile
 import unittest
 from pathlib import Path
 
-
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 PYTHON = sys.executable
 
@@ -95,6 +94,11 @@ class CliLifecycleTest(unittest.TestCase):
                 "slug": "zadie_smith",
                 "base_dir": "skills/celebrity",
             },
+            "pedant": {
+                "name": "Course Boundary Analyst",
+                "slug": "course_boundary",
+                "base_dir": "skills/pedant",
+            },
         }
 
         with tempfile.TemporaryDirectory() as tmp_dir:
@@ -156,7 +160,9 @@ class CliLifecycleTest(unittest.TestCase):
                     + "\n",
                     encoding="utf-8",
                 )
-                work_patch_path.write_text("## new evidence\n- Adds a later example.\n", encoding="utf-8")
+                work_patch_path.write_text(
+                    "## new evidence\n- Adds a later example.\n", encoding="utf-8"
+                )
                 self.write_json(
                     correction_path,
                     {
@@ -293,9 +299,9 @@ class CliLifecycleTest(unittest.TestCase):
                         str(skill_dir),
                     )
                     self.assertIn("summary.md", merged.stdout)
-                    summary_text = (skill_dir / "knowledge" / "research" / "merged" / "summary.md").read_text(
-                        encoding="utf-8"
-                    )
+                    summary_text = (
+                        skill_dir / "knowledge" / "research" / "merged" / "summary.md"
+                    ).read_text(encoding="utf-8")
                     self.assertIn("Research Summary", summary_text)
 
                     quality = self.run_cmd(

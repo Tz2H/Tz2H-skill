@@ -10,7 +10,6 @@ from __future__ import annotations
 
 from pathlib import Path
 
-
 COMMON_KNOWLEDGE_DIRS = [
     "docs",
     "messages",
@@ -86,7 +85,8 @@ CHARACTER_PRESETS = {
         "is_public_figure": True,
         "is_fictional": False,
         "command_aliases": ["/create-icon", "/create-skill"],
-        "knowledge_dirs": COMMON_KNOWLEDGE_DIRS + [
+        "knowledge_dirs": COMMON_KNOWLEDGE_DIRS
+        + [
             "research/raw",
             "research/merged",
             "research/reviews",
@@ -164,6 +164,38 @@ CHARACTER_PRESETS = {
         "skill_name_prefix": "celebrity",
         "legacy_type": "celebrity",
     },
+    "pedant": {
+        "character": "pedant",
+        "display_name": "Pedant",
+        "identity_label": "Pedant Analyst",
+        "gallery_category": "Pedant",
+        "source_domain": "education",
+        "relationship_to_user": "teaching_authority",
+        "is_real_person": False,
+        "is_public_figure": False,
+        "is_fictional": False,
+        "command_aliases": ["/create-pedant", "/create-skill"],
+        "knowledge_dirs": COMMON_KNOWLEDGE_DIRS
+        + [
+            "course",
+            "evidence",
+            "complaints",
+        ],
+        "storage_root": "skills/pedant",
+        "prompt_bundle": {
+            "preset": "tz2h.pedant.v1",
+            "intake": "prompts/pedant/intake.md",
+            "behavior_analyzer": "prompts/pedant/behavior_analyzer.md",
+            "rhetoric_analyzer": "prompts/pedant/rhetoric_analyzer.md",
+            "response_builder": "prompts/pedant/response_builder.md",
+            "persona_builder": "prompts/pedant/persona_builder.md",
+            "merger": "prompts/pedant/merger.md",
+            "correction_handler": "prompts/correction_handler.md",
+        },
+        "legacy_storage_root": "skills/pedant",
+        "skill_name_prefix": "pedant",
+        "legacy_type": "pedant",
+    },
 }
 
 
@@ -175,6 +207,9 @@ CHARACTER_ALIASES = {
     "character": "celebrity",
     "fictional-character": "celebrity",
     "nuwa": "celebrity",
+    "teacher": "pedant",
+    "teaching-authority": "pedant",
+    "academic-pedant": "pedant",
 }
 
 

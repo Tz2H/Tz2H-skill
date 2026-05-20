@@ -11,12 +11,11 @@
     python feishu_parser.py --file messages.txt --target "张三" --output output.txt
 """
 
+import argparse
 import json
 import re
 import sys
-import argparse
 from pathlib import Path
-from datetime import datetime
 
 
 def parse_feishu_json(file_path: str, target_name: str) -> list[dict]:
@@ -31,12 +30,7 @@ def parse_feishu_json(file_path: str, target_name: str) -> list[dict]:
         raw_messages = data
     elif isinstance(data, dict):
         # 可能在 data.messages 或 data.records 等字段下
-        raw_messages = (
-            data.get("messages")
-            or data.get("records")
-            or data.get("data")
-            or []
-        )
+        raw_messages = data.get("messages") or data.get("records") or data.get("data") or []
     else:
         return []
 
@@ -49,26 +43,16 @@ def parse_feishu_json(file_path: str, target_name: str) -> list[dict]:
             or ""
         )
         content = (
-            msg.get("content")
-            or msg.get("text")
-            or msg.get("message")
-            or msg.get("body")
-            or ""
+            msg.get("content") or msg.get("text") or msg.get("message") or msg.get("body") or ""
         )
-        timestamp = (
-            msg.get("timestamp")
-            or msg.get("create_time")
-            or msg.get("time")
-            or ""
-        )
+        timestamp = msg.get("timestamp") or msg.get("create_time") or msg.get("time") or ""
 
         # content 可能是嵌套结构
         if isinstance(content, dict):
             content = content.get("text") or content.get("content") or str(content)
         if isinstance(content, list):
             content = " ".join(
-                c.get("text", "") if isinstance(c, dict) else str(c)
-                for c in content
+                c.get("text", "") if isinstance(c, dict) else str(c) for c in content
             )
 
         # 过滤：只保留目标人发送的消息
@@ -79,11 +63,13 @@ def parse_feishu_json(file_path: str, target_name: str) -> list[dict]:
         if not content or content.strip() in ["[图片]", "[文件]", "[撤回了一条消息]", "[语音]"]:
             continue
 
-        messages.append({
-            "sender": str(sender),
-            "content": str(content).strip(),
-            "timestamp": str(timestamp),
-        })
+        messages.append(
+            {
+                "sender": str(sender),
+                "content": str(content).strip(),
+                "timestamp": str(timestamp),
+            }
+        )
 
     return messages
 
@@ -116,19 +102,23 @@ def parse_feishu_txt(file_path: str, target_name: str) -> list[dict]:
             if not content:
                 continue
 
-            messages.append({
-                "sender": sender,
-                "content": content,
-                "timestamp": timestamp,
-            })
+            messages.append(
+                {
+                    "sender": sender,
+                    "content": content,
+                    "timestamp": timestamp,
+                }
+            )
         else:
             # 没有匹配格式，检查是否包含目标人名
             if target_name and target_name in line:
-                messages.append({
-                    "sender": target_name,
-                    "content": line,
-                    "timestamp": "",
-                })
+                messages.append(
+                    {
+                        "sender": target_name,
+                        "content": line,
+                        "timestamp": "",
+                    }
+                )
 
     return messages
 
@@ -145,9 +135,27 @@ def extract_key_content(messages: list[dict]) -> dict:
     daily_messages = []
 
     decision_keywords = [
-        "同意", "不行", "觉得", "建议", "应该", "不应该", "可以", "不可以",
-        "方案", "思路", "考虑", "决定", "确认", "拒绝", "推进", "暂缓",
-        "没问题", "有问题", "风险", "评估", "判断"
+        "同意",
+        "不行",
+        "觉得",
+        "建议",
+        "应该",
+        "不应该",
+        "可以",
+        "不可以",
+        "方案",
+        "思路",
+        "考虑",
+        "决定",
+        "确认",
+        "拒绝",
+        "推进",
+        "暂缓",
+        "没问题",
+        "有问题",
+        "风险",
+        "评估",
+        "判断",
     ]
 
     for msg in messages:
@@ -171,7 +179,7 @@ def extract_key_content(messages: list[dict]) -> dict:
 def format_output(target_name: str, extracted: dict) -> str:
     """格式化输出，供 AI 分析使用"""
     lines = [
-        f"# 飞书消息提取结果",
+        "# 飞书消息提取结果",
         f"目标人物：{target_name}",
         f"总消息数：{extracted['total_count']}",
         "",
@@ -213,7 +221,7 @@ def format_output(target_name: str, extracted: dict) -> str:
     return "\n".join(lines)
 
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser(description="解析飞书消息导出文件")
     parser.add_argument("--file", required=True, help="输入文件路径（.json 或 .txt）")
     parser.add_argument("--target", required=True, help="目标人物姓名（只提取此人发出的消息）")

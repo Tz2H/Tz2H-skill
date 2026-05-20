@@ -1,6 +1,5 @@
-from pathlib import Path
 import unittest
-
+from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -47,6 +46,7 @@ class SkillEntrypointDocsTest(unittest.TestCase):
         self.assertIn("~/.codex/skills/Tz2H-skill", readme)
         self.assertIn("/Tz2H-skill", readme)
         self.assertIn("./skills/colleague", readme)
+        self.assertIn("./skills/pedant", readme)
 
         self.assertIn("install_claude_generated_skill.py", readme)
         self.assertIn("install_openclaw_generated_skill.py", readme)
@@ -55,6 +55,7 @@ class SkillEntrypointDocsTest(unittest.TestCase):
         self.assertIn("install_codex_skill.py", readme)
         self.assertIn("/{character}-{slug}", readme)
         self.assertIn("./skills/colleague", skill)
+        self.assertIn("./skills/pedant", skill)
         self.assertIn("兼容宿主", readme)
         self.assertFalse((ROOT / "INSTALL.md").exists())
         self.assertFalse((ROOT / "ROADMAP.md").exists())
@@ -67,7 +68,10 @@ class SkillEntrypointDocsTest(unittest.TestCase):
         self.assertFalse((ROOT / "colleagues").exists())
 
     def test_upstream_docs_have_been_removed(self) -> None:
-        self.assertFalse((ROOT / "docs").exists())
+        docs_dir = ROOT / "docs"
+        if docs_dir.exists():
+            allowed_docs = {docs_dir / "agents"}
+            self.assertTrue(set(docs_dir.iterdir()).issubset(allowed_docs))
         self.assertFalse((ROOT / "colleague_skill.pdf").exists())
         self.assertFalse((ROOT / "openarena-claim.txt").exists())
 

@@ -7,10 +7,7 @@ import argparse
 import re
 from pathlib import Path
 
-
-TIMESTAMP_PATTERN = re.compile(
-    r"^\s*(\d{2}:\d{2}:\d{2}[\.,]\d{3}|\d{2}:\d{2}[\.,]\d{3})\s+-->\s+"
-)
+TIMESTAMP_PATTERN = re.compile(r"^\s*(\d{2}:\d{2}:\d{2}[\.,]\d{3}|\d{2}:\d{2}[\.,]\d{3})\s+-->\s+")
 
 
 def _strip_vtt_headers(content: str) -> str:

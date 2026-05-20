@@ -7,11 +7,12 @@ import argparse
 import shutil
 from pathlib import Path
 
-
 IGNORE_NAMES = shutil.ignore_patterns(".git", "__pycache__", ".DS_Store", "*.pyc")
 
 
-def install_skill(source: Path, destination: Path, force: bool = False, dry_run: bool = False) -> Path:
+def install_skill(
+    source: Path, destination: Path, force: bool = False, dry_run: bool = False
+) -> Path:
     """Copy the repo into the Codex local skill directory."""
     if not (source / "SKILL.md").exists():
         raise FileNotFoundError(f"source does not look like a skill repo: {source}")
@@ -42,7 +43,9 @@ def main() -> None:
         help="Destination Codex skill directory",
     )
     parser.add_argument("--force", action="store_true", help="Overwrite the destination if needed")
-    parser.add_argument("--dry-run", action="store_true", help="Print the install target without copying")
+    parser.add_argument(
+        "--dry-run", action="store_true", help="Print the install target without copying"
+    )
     args = parser.parse_args()
 
     destination = install_skill(

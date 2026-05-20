@@ -41,18 +41,18 @@
 
 from __future__ import annotations
 
+import argparse
 import json
 import sys
 import time
-import argparse
-from pathlib import Path
 from datetime import datetime, timezone
+from pathlib import Path
 from typing import Optional
 
 try:
     import requests
 except ImportError:
-    print("错误：请先安装 requests：pip3 install requests", file=sys.stderr)
+    print("错误：请先安装 requests：uv sync --all-extras", file=sys.stderr)
     sys.exit(1)
 
 
@@ -61,6 +61,7 @@ BASE_URL = "https://open.feishu.cn/open-apis"
 
 
 # ─── 配置 ────────────────────────────────────────────────────────────────────
+
 
 def load_config() -> dict:
     if not CONFIG_PATH.exists():
@@ -102,7 +103,9 @@ def setup_config() -> None:
     print("  ─── 私聊采集说明 ───")
     print("  私聊消息必须通过 user_access_token 获取（应用身份无权访问私聊）。")
     print("  获取方式：OAuth 授权，授权链接格式：")
-    print("    https://open.feishu.cn/open-apis/authen/v1/authorize?app_id={APP_ID}&redirect_uri={REDIRECT}&scope=im:message%20im:chat")
+    print(
+        "    https://open.feishu.cn/open-apis/authen/v1/authorize?app_id={APP_ID}&redirect_uri={REDIRECT}&scope=im:message%20im:chat"
+    )
     print("  授权后从回调 URL 中取 code，用 --exchange-code 换取 token。")
     print()
 
@@ -196,6 +199,7 @@ def exchange_code_for_token(code: str, config: dict) -> dict:
 
 # ─── 用户搜索 ─────────────────────────────────────────────────────────────────
 
+
 def _find_user_by_contact(name: str, config: dict) -> Optional[dict]:
     """通过邮箱或手机号查找用户（使用 tenant_access_token）"""
     # 判断输入类型
@@ -215,7 +219,9 @@ def _find_user_by_contact(name: str, config: dict) -> Optional[dict]:
 
     data = api_post("/contact/v3/users/batch_get_id", body, config)
     if data.get("code") != 0:
-        print(f"  邮箱/手机号查找失败（code={data.get('code')}）：{data.get('msg')}", file=sys.stderr)
+        print(
+            f"  邮箱/手机号查找失败（code={data.get('code')}）：{data.get('msg')}", file=sys.stderr
+        )
         return None
 
     user_list = data.get("data", {}).get("user_list", [])
@@ -250,8 +256,10 @@ def _find_user_by_department(name: str, config: dict) -> Optional[dict]:
         )
         if data.get("code") != 0:
             if parent_id == "0":
-                print(f"  部门遍历失败（code={data.get('code')}）：{data.get('msg')}", file=sys.stderr)
-                print(f"  请确认已开通 contact:department.base:readonly 权限", file=sys.stderr)
+                print(
+                    f"  部门遍历失败（code={data.get('code')}）：{data.get('msg')}", file=sys.stderr
+                )
+                print("  请确认已开通 contact:department.base:readonly 权限", file=sys.stderr)
                 return None
             continue
 
@@ -313,7 +321,10 @@ def _select_user(users: list, name: str) -> Optional[dict]:
     if len(users) == 1:
         u = users[0]
         dept_ids = u.get("department_ids", [])
-        print(f"  找到用户：{u.get('name')}（部门：{dept_ids[0] if dept_ids else ''}）", file=sys.stderr)
+        print(
+            f"  找到用户：{u.get('name')}（部门：{dept_ids[0] if dept_ids else ''}）",
+            file=sys.stderr,
+        )
         return u
 
     # 多个结果，让用户选择
@@ -323,7 +334,7 @@ def _select_user(users: list, name: str) -> Optional[dict]:
         dept_str = dept_ids[0] if dept_ids else ""
         en = u.get("en_name", "")
         label = f"{u.get('name', '')} ({en})" if en else u.get("name", "")
-        print(f"    [{i+1}] {label}  dept={dept_str}  uid={u.get('user_id', '')}")
+        print(f"    [{i + 1}] {label}  dept={dept_str}  uid={u.get('user_id', '')}")
 
     choice = input("\n  选择编号（默认 1）：").strip() or "1"
     try:
@@ -355,14 +366,15 @@ def find_user(name: str, config: dict) -> Optional[dict]:
 
     # 都失败
     print(f"\n  ❌ 未能找到用户 {name}", file=sys.stderr)
-    print(f"  建议：", file=sys.stderr)
-    print(f"    1. 确认已开通 contact:department.base:readonly 权限", file=sys.stderr)
-    print(f"    2. 改用邮箱搜索：--name user@company.com", file=sys.stderr)
-    print(f"    3. 改用手机号搜索：--name +8613800138000", file=sys.stderr)
+    print("  建议：", file=sys.stderr)
+    print("    1. 确认已开通 contact:department.base:readonly 权限", file=sys.stderr)
+    print("    2. 改用邮箱搜索：--name user@company.com", file=sys.stderr)
+    print("    3. 改用手机号搜索：--name +8613800138000", file=sys.stderr)
     return None
 
 
 # ─── 消息记录 ─────────────────────────────────────────────────────────────────
+
 
 def get_chats_with_user(user_open_id: str, config: dict) -> list:
     """找到 bot 和目标用户共同在的群聊"""
@@ -505,7 +517,9 @@ def fetch_p2p_messages(
 
         data = api_get("/im/v1/messages", params, config, use_user_token=True)
         if data.get("code") != 0:
-            print(f"  拉取私聊消息失败（code={data.get('code')}）：{data.get('msg')}", file=sys.stderr)
+            print(
+                f"  拉取私聊消息失败（code={data.get('code')}）：{data.get('msg')}", file=sys.stderr
+            )
             break
 
         items = data.get("data", {}).get("items", [])
@@ -548,13 +562,15 @@ def fetch_p2p_messages(
                 except Exception:
                     pass
 
-            is_target = (sender_id == user_open_id)
-            messages.append({
-                "content": content,
-                "time": ts,
-                "sender_id": sender_id,
-                "is_target": is_target,
-            })
+            is_target = sender_id == user_open_id
+            messages.append(
+                {
+                    "content": content,
+                    "time": ts,
+                    "sender_id": sender_id,
+                    "is_target": is_target,
+                }
+            )
 
         if not data.get("data", {}).get("has_more"):
             break
@@ -588,8 +604,8 @@ def collect_messages(
         chat_sources.append(f"私聊（{len(p2p_msgs)} 条）")
         print(f"    获取 {len(p2p_msgs)} 条私聊消息", file=sys.stderr)
     elif user_token and not p2p_chat_id:
-        print(f"  ⚠️  有 user_access_token 但未配置 p2p_chat_id，跳过私聊采集", file=sys.stderr)
-        print(f"     请在配置中添加 p2p_chat_id（通过发送消息 API 返回值获取）", file=sys.stderr)
+        print("  ⚠️  有 user_access_token 但未配置 p2p_chat_id，跳过私聊采集", file=sys.stderr)
+        print("     请在配置中添加 p2p_chat_id（通过发送消息 API 返回值获取）", file=sys.stderr)
 
     # ── 群聊采集（使用 tenant_access_token）──
     remaining = msg_limit - len(all_messages)
@@ -629,7 +645,7 @@ def collect_messages(
     short_msgs = [m for m in target_msgs if len(m.get("content", "")) <= 50]
 
     lines = [
-        f"# 飞书消息记录（自动采集）",
+        "# 飞书消息记录（自动采集）",
         f"目标：{name}",
         f"来源：{', '.join(chat_sources)}",
         f"共 {len(all_messages)} 条消息（目标用户 {len(target_msgs)} 条，对话方 {len(other_msgs)} 条）",
@@ -662,6 +678,7 @@ def collect_messages(
 
 # ─── 文档采集 ─────────────────────────────────────────────────────────────────
 
+
 def search_docs_by_user(user_open_id: str, name: str, doc_limit: int, config: dict) -> list:
     """搜索目标用户创建或编辑的文档"""
     print(f"  搜索 {name} 的文档 ...", file=sys.stderr)
@@ -681,7 +698,7 @@ def search_docs_by_user(user_open_id: str, name: str, doc_limit: int, config: di
 
     if data.get("code") != 0:
         # fallback：用关键词搜索
-        print(f"  按创建人搜索失败，改用关键词搜索 ...", file=sys.stderr)
+        print("  按创建人搜索失败，改用关键词搜索 ...", file=sys.stderr)
         data = api_post(
             "/search/v2/message",
             {
@@ -696,12 +713,14 @@ def search_docs_by_user(user_open_id: str, name: str, doc_limit: int, config: di
     for item in data.get("data", {}).get("results", []):
         doc_info = item.get("docs_info", {})
         if doc_info:
-            docs.append({
-                "title": doc_info.get("title", ""),
-                "url": doc_info.get("url", ""),
-                "type": doc_info.get("docs_type", ""),
-                "creator": doc_info.get("creator", {}).get("name", ""),
-            })
+            docs.append(
+                {
+                    "title": doc_info.get("title", ""),
+                    "url": doc_info.get("url", ""),
+                    "type": doc_info.get("docs_type", ""),
+                    "creator": doc_info.get("creator", {}).get("name", ""),
+                }
+            )
 
     print(f"  找到 {len(docs)} 篇文档", file=sys.stderr)
     return docs
@@ -715,7 +734,7 @@ def fetch_doc_content(doc_token: str, doc_type: str, config: dict) -> str:
 
     elif doc_type == "wiki":
         # 先获取 wiki node 信息
-        node_data = api_get(f"/wiki/v2/spaces/get_node", {"token": doc_token}, config)
+        node_data = api_get("/wiki/v2/spaces/get_node", {"token": doc_token}, config)
         obj_token = node_data.get("data", {}).get("node", {}).get("obj_token", doc_token)
         obj_type = node_data.get("data", {}).get("node", {}).get("obj_type", "docx")
         return fetch_doc_content(obj_token, obj_type, config)
@@ -726,6 +745,7 @@ def fetch_doc_content(doc_token: str, doc_type: str, config: dict) -> str:
 def collect_docs(user: dict, doc_limit: int, config: dict) -> str:
     """采集目标用户的文档"""
     import re
+
     user_open_id = user.get("open_id") or user.get("user_id", "")
     name = user.get("name", "")
 
@@ -734,7 +754,7 @@ def collect_docs(user: dict, doc_limit: int, config: dict) -> str:
         return f"# 文档内容\n\n未找到 {name} 相关文档\n"
 
     lines = [
-        f"# 文档内容（自动采集）",
+        "# 文档内容（自动采集）",
         f"目标：{name}",
         f"共 {len(docs)} 篇",
         "",
@@ -755,11 +775,11 @@ def collect_docs(user: dict, doc_limit: int, config: dict) -> str:
 
         content = fetch_doc_content(doc_token, doc_type or "docx", config)
         if not content or len(content.strip()) < 20:
-            print(f"    内容为空，跳过", file=sys.stderr)
+            print("    内容为空，跳过", file=sys.stderr)
             continue
 
         lines += [
-            f"---",
+            "---",
             f"## 《{title}》",
             f"链接：{url}",
             f"创建人：{doc.get('creator', '')}",
@@ -772,6 +792,7 @@ def collect_docs(user: dict, doc_limit: int, config: dict) -> str:
 
 
 # ─── 多维表格 ─────────────────────────────────────────────────────────────────
+
 
 def collect_bitable(app_token: str, config: dict) -> str:
     """拉取多维表格内容"""
@@ -815,8 +836,7 @@ def collect_bitable(app_token: str, config: dict) -> str:
                 val = row_data.get(f, "")
                 if isinstance(val, list):
                     val = " ".join(
-                        v.get("text", str(v)) if isinstance(v, dict) else str(v)
-                        for v in val
+                        v.get("text", str(v)) if isinstance(v, dict) else str(v) for v in val
                     )
                 row.append(str(val).replace("|", "｜").replace("\n", " "))
             lines.append("| " + " | ".join(row) + " |")
@@ -827,6 +847,7 @@ def collect_bitable(app_token: str, config: dict) -> str:
 
 
 # ─── 主流程 ───────────────────────────────────────────────────────────────────
+
 
 def collect_all(
     name: str,
@@ -893,10 +914,16 @@ def main() -> None:
     parser.add_argument("--output-dir", default=None, help="输出目录（默认 ./knowledge/{name}）")
     parser.add_argument("--msg-limit", type=int, default=1000, help="最多采集消息条数（默认 1000）")
     parser.add_argument("--doc-limit", type=int, default=20, help="最多采集文档篇数（默认 20）")
-    parser.add_argument("--exchange-code", metavar="CODE", help="用 OAuth 授权码换取 user_access_token 并保存到配置")
-    parser.add_argument("--user-token", metavar="TOKEN", help="直接指定 user_access_token（覆盖配置文件）")
+    parser.add_argument(
+        "--exchange-code", metavar="CODE", help="用 OAuth 授权码换取 user_access_token 并保存到配置"
+    )
+    parser.add_argument(
+        "--user-token", metavar="TOKEN", help="直接指定 user_access_token（覆盖配置文件）"
+    )
     parser.add_argument("--p2p-chat-id", metavar="CHAT_ID", help="私聊会话 ID（覆盖配置文件）")
-    parser.add_argument("--open-id", metavar="OPEN_ID", help="直接指定目标用户的 open_id（跳过用户搜索）")
+    parser.add_argument(
+        "--open-id", metavar="OPEN_ID", help="直接指定目标用户的 open_id（跳过用户搜索）"
+    )
 
     args = parser.parse_args()
 
@@ -928,7 +955,9 @@ def main() -> None:
     if args.p2p_chat_id:
         config["p2p_chat_id"] = args.p2p_chat_id
 
-    output_dir = Path(args.output_dir) if args.output_dir else Path(f"./knowledge/{args.name or 'target'}")
+    output_dir = (
+        Path(args.output_dir) if args.output_dir else Path(f"./knowledge/{args.name or 'target'}")
+    )
 
     # 如果提供了 open_id，跳过用户搜索
     if args.open_id:

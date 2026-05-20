@@ -43,12 +43,14 @@ def list_versions(skill_dir: Path) -> list[dict]:
         ).strftime("%Y-%m-%d %H:%M")
 
         files = [item.name for item in version_dir.iterdir() if item.is_file()]
-        versions.append({
-            "version": version_dir.name,
-            "archived_at": archived_at,
-            "files": files,
-            "path": str(version_dir),
-        })
+        versions.append(
+            {
+                "version": version_dir.name,
+                "archived_at": archived_at,
+                "files": files,
+                "path": str(version_dir),
+            }
+        )
 
     return versions
 
@@ -136,7 +138,9 @@ def cleanup_old_versions(skill_dir: Path, max_versions: int = MAX_VERSIONS) -> N
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Skill version manager")
-    parser.add_argument("--action", required=True, choices=["list", "backup", "rollback", "cleanup"])
+    parser.add_argument(
+        "--action", required=True, choices=["list", "backup", "rollback", "cleanup"]
+    )
     parser.add_argument("--slug", required=True, help="Skill slug")
     parser.add_argument("--version", help="Target version for rollback")
     parser.add_argument("--character", default="colleague", help="Character family preset")

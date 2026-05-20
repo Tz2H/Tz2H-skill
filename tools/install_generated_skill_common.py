@@ -10,7 +10,6 @@ from pathlib import Path
 
 from skill_schema import enrich_skill_meta, now_iso
 
-
 FRONTMATTER_RE = re.compile(r"\A---\n(.*?)\n---\n?", re.DOTALL)
 
 
@@ -31,7 +30,7 @@ def rewrite_frontmatter_name(markdown: str, new_name: str) -> str:
     if not match:
         return markdown
 
-    body = markdown[match.end():]
+    body = markdown[match.end() :]
     lines = match.group(1).splitlines()
     rewritten: list[str] = []
     replaced = False
@@ -46,7 +45,7 @@ def rewrite_frontmatter_name(markdown: str, new_name: str) -> str:
     if not replaced:
         rewritten.insert(0, f"name: {new_name}")
 
-    return f"---\n" + "\n".join(rewritten) + "\n---\n\n" + body.lstrip("\n")
+    return "---\n" + "\n".join(rewritten) + "\n---\n\n" + body.lstrip("\n")
 
 
 def render_installed_markdown(skill_dir: Path, artifact_name: str, command_name: str) -> str:

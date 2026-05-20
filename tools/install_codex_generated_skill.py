@@ -39,8 +39,12 @@ def main() -> None:
         default=str(default_codex_skills_dir()),
         help="Target Codex skills directory",
     )
-    parser.add_argument("--force", action="store_true", help="Overwrite an existing installed skill")
-    parser.add_argument("--dry-run", action="store_true", help="Resolve install paths without writing files")
+    parser.add_argument(
+        "--force", action="store_true", help="Overwrite an existing installed skill"
+    )
+    parser.add_argument(
+        "--dry-run", action="store_true", help="Resolve install paths without writing files"
+    )
     args = parser.parse_args()
 
     result = install_generated_skill(

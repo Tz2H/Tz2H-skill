@@ -1,6 +1,6 @@
 ---
 name: Tz2H-skill
-description: "Unified meta-skill engine for distilling colleague, relationship, or celebrity characters into reusable Skills. | 统一的 meta-skill 引擎，把 colleague、relationship、celebrity 三类对象蒸馏成可复用 Skill。"
+description: "Unified meta-skill engine for distilling colleague, relationship, celebrity, or pedant characters into reusable Skills. | 统一的 meta-skill 引擎，把 colleague、relationship、celebrity、pedant 四类对象蒸馏成可复用 Skill。"
 argument-hint: "[character] [name-or-slug]"
 version: "1.0.0"
 user-invocable: true
@@ -35,7 +35,7 @@ allowed-tools: Read, Write, Edit, Bash
 - Codex
 
 统一主入口是 `Tz2H-skill`。在支持 slash command 的宿主中，使用 `/Tz2H-skill`。
-对 Hermes 而言，只保证 `/Tz2H-skill` 这一条 slash 入口稳定；`colleague`、`relationship`、`celebrity` 的兼容语义保留在工具层和 preset 层，但不保证每个兼容名称都能作为 Hermes slash command 被路由。
+对 Hermes 而言，只保证 `/Tz2H-skill` 这一条 slash 入口稳定；`colleague`、`relationship`、`celebrity`、`pedant` 的兼容语义保留在工具层和 preset 层，但不保证每个兼容名称都能作为 Hermes slash command 被路由。
 
 当用户对已有 Skill 说以下内容时，进入进化模式：
 - "我有新文件" / "追加"
@@ -72,6 +72,7 @@ allowed-tools: Read, Write, Edit, Bash
 - `colleague` → `./skills/colleague/{slug}/`
 - `relationship` → `./skills/relationship/{slug}/`
 - `celebrity` → `./skills/celebrity/{slug}/`
+- `pedant` → `./skills/pedant/{slug}/`
 
 如需改为全局路径，用 `--base-dir` 指向对应 character family 的根目录。
 
@@ -86,6 +87,7 @@ allowed-tools: Read, Write, Edit, Bash
 1. `colleague`
 2. `relationship`
 3. `celebrity`
+4. `pedant`
 
 如果上层宿主已经显式把 family 传进来，则直接固定对应的 character family。
 
@@ -103,9 +105,11 @@ allowed-tools: Read, Write, Edit, Bash
 - `colleague` → `prompts/colleague/intake.md`
 - `relationship` → `prompts/relationship/intake.md`
 - `celebrity` → `prompts/celebrity/intake.md`
+- `pedant` → `prompts/pedant/intake.md`
 
 `colleague` 和 `relationship` 只问 3 个问题。
 `celebrity` 按 `prompts/celebrity/intake.md` 问 4 个问题，其中第 4 个问题必须确认 `research_profile`。
+`pedant` 按 `prompts/pedant/intake.md` 问 4 个问题，重点确认教学权力结构、具体行为、用户目标与风险边界。
 
 默认的 3 个基础问题：
 
@@ -384,6 +388,7 @@ python3 tools/feishu_mcp_client.py \
 | `colleague` | `prompts/colleague/intake.md` | `prompts/colleague/persona_analyzer.md` | `prompts/colleague/persona_builder.md` | `prompts/colleague/merger.md` | `./skills/colleague/{slug}` |
 | `relationship` | `prompts/relationship/intake.md` | `prompts/relationship/persona_analyzer.md` | `prompts/relationship/persona_builder.md` | `prompts/relationship/merger.md` | `./skills/relationship/{slug}` |
 | `celebrity` | `prompts/celebrity/intake.md` | `prompts/celebrity/persona_analyzer.md` | `prompts/celebrity/persona_builder.md` | `prompts/celebrity/merger.md` | `./skills/celebrity/{slug}` |
+| `pedant` | `prompts/pedant/intake.md` | `prompts/pedant/behavior_analyzer.md` + `prompts/pedant/rhetoric_analyzer.md` | `prompts/pedant/persona_builder.md` | `prompts/pedant/merger.md` | `./skills/pedant/{slug}` |
 
 Work 模块当前使用 colleague 专门模板；其他 family 需要生成 work artifact 时复用这套工作能力模板：
 - Work analyzer：`prompts/colleague/work_analyzer.md`

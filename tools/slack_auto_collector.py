@@ -32,13 +32,13 @@ Slack 自动采集器
 
 from __future__ import annotations
 
+import argparse
 import json
 import sys
 import time
-import argparse
-from pathlib import Path
 from datetime import datetime, timezone
-from typing import Optional
+from pathlib import Path
+from typing import Any, Optional
 
 # ─── 依赖检查 ──────────────────────────────────────────────────────────────────
 
@@ -47,7 +47,7 @@ try:
     from slack_sdk.errors import SlackApiError
 except ImportError:
     print(
-        "错误：请先安装 slack_sdk：pip3 install slack-sdk",
+        "错误：请先安装 slack_sdk：uv sync --all-extras",
         file=sys.stderr,
     )
     sys.exit(1)
@@ -61,8 +61,8 @@ CHANNEL_TYPES = "public_channel,private_channel,mpim,im"
 
 # 速率限制重试配置
 MAX_RETRIES = 5
-RETRY_BASE_WAIT = 1.0     # 最短等待秒数
-RETRY_MAX_WAIT = 60.0     # 最长等待秒数
+RETRY_BASE_WAIT = 1.0  # 最短等待秒数
+RETRY_MAX_WAIT = 60.0  # 最长等待秒数
 
 # 采集默认值
 DEFAULT_MSG_LIMIT = 1000
@@ -70,6 +70,7 @@ DEFAULT_CHANNEL_LIMIT = 50  # 最多检查的频道数
 
 
 # ─── 错误类型 ──────────────────────────────────────────────────────────────────
+
 
 class SlackCollectorError(Exception):
     """采集过程中的可预期错误，直接退出"""
@@ -84,6 +85,7 @@ class SlackAuthError(SlackCollectorError):
 
 
 # ─── 配置管理 ──────────────────────────────────────────────────────────────────
+
 
 def load_config() -> dict:
     if not CONFIG_PATH.exists():
@@ -155,13 +157,14 @@ def setup_config() -> None:
 
 # ─── Slack Client 封装（带速率限制重试）─────────────────────────────────────────
 
+
 class RateLimitedClient:
     """封装 slack_sdk WebClient，自动处理 429 速率限制"""
 
     def __init__(self, token: str) -> None:
         self._client = WebClient(token=token)
 
-    def call(self, method: str, **kwargs) -> dict:
+    def call(self, method: str, **kwargs: Any) -> dict[str, Any]:
         """调用任意 Slack API，遇到 ratelimited 自动等待重试"""
         for attempt in range(1, MAX_RETRIES + 1):
             try:
@@ -173,9 +176,7 @@ class RateLimitedClient:
 
                 # 速率限制：读取 Retry-After header 等待
                 if error == "ratelimited":
-                    wait = float(
-                        e.response.headers.get("Retry-After", RETRY_BASE_WAIT * attempt)
-                    )
+                    wait = float(e.response.headers.get("Retry-After", RETRY_BASE_WAIT * attempt))
                     wait = min(wait, RETRY_MAX_WAIT)
                     print(
                         f"  [速率限制] 等待 {wait:.0f}s（第 {attempt}/{MAX_RETRIES} 次重试）...",
@@ -209,7 +210,7 @@ class RateLimitedClient:
         print(f"  [错误] {method} 多次重试后仍失败，跳过", file=sys.stderr)
         return {}
 
-    def paginate(self, method: str, result_key: str, **kwargs) -> list:
+    def paginate(self, method: str, result_key: str, **kwargs: Any) -> list[Any]:
         """自动翻页，返回所有结果的合并列表"""
         items: list = []
         cursor = None
@@ -235,6 +236,7 @@ class RateLimitedClient:
 
 # ─── 用户搜索 ──────────────────────────────────────────────────────────────────
 
+
 def find_user(name: str, client: RateLimitedClient) -> Optional[dict]:
     """
     通过姓名（real_name / display_name / name）搜索 Slack 用户。
@@ -250,7 +252,8 @@ def find_user(name: str, client: RateLimitedClient) -> Optional[dict]:
 
     # 过滤掉 Bot / 已停用账号
     members = [
-        m for m in members
+        m
+        for m in members
         if not m.get("is_bot") and not m.get("deleted") and m.get("id") != "USLACKBOT"
     ]
 
@@ -264,11 +267,7 @@ def find_user(name: str, client: RateLimitedClient) -> Optional[dict]:
 
         if name_lower in (real_name, display_name, username):
             return 3  # 精确匹配
-        if (
-            name_lower in real_name
-            or name_lower in display_name
-            or name_lower in username
-        ):
+        if name_lower in real_name or name_lower in display_name or name_lower in username:
             return 2  # 包含匹配
         # 中文名字拆字匹配
         if all(ch in real_name or ch in display_name for ch in name_lower if ch.strip()):
@@ -301,7 +300,7 @@ def find_user(name: str, client: RateLimitedClient) -> Optional[dict]:
         display_name = profile.get("display_name", "")
         username = m.get("name", "")
         title = profile.get("title", "")
-        print(f"    [{i+1}] {real_name}（@{display_name or username}）  {title}")
+        print(f"    [{i + 1}] {real_name}（@{display_name or username}）  {title}")
 
     choice = input("\n  选择编号（默认 1）：").strip() or "1"
     try:
@@ -326,6 +325,7 @@ def _print_user(user: dict) -> None:
 
 
 # ─── 频道发现 ──────────────────────────────────────────────────────────────────
+
 
 def get_channels_with_user(
     user_id: str,
@@ -391,6 +391,7 @@ def get_channels_with_user(
 
 
 # ─── 消息采集 ──────────────────────────────────────────────────────────────────
+
 
 def fetch_messages_from_channel(
     channel_id: str,
@@ -473,6 +474,7 @@ def fetch_messages_from_channel(
 def _is_noise(text: str) -> bool:
     """判断是否是无意义消息（纯表情、@mention、URL）"""
     import re
+
     # 去掉 Slack 特殊格式后几乎为空
     cleaned = re.sub(r"<[^>]+>", "", text).strip()
     cleaned = re.sub(r":[a-z_]+:", "", cleaned).strip()
@@ -488,6 +490,7 @@ def _format_ts(ts: str) -> str:
 
 
 # ─── 主采集流程 ────────────────────────────────────────────────────────────────
+
 
 def collect_messages(
     user: dict,
@@ -514,22 +517,14 @@ def collect_messages(
         ch_name = ch.get("name", ch_id)
         print(f"  拉取 #{ch_name} 的消息 ...", file=sys.stderr)
 
-        msgs = fetch_messages_from_channel(
-            ch_id, ch_name, user_id, per_channel_limit, client
-        )
+        msgs = fetch_messages_from_channel(ch_id, ch_name, user_id, per_channel_limit, client)
         all_messages.extend(msgs)
         print(f"    获取 {len(msgs)} 条", file=sys.stderr)
 
     # 按权重分类
     thread_msgs = [m for m in all_messages if m["is_thread_starter"]]
-    long_msgs = [
-        m for m in all_messages
-        if not m["is_thread_starter"] and len(m["content"]) > 50
-    ]
-    short_msgs = [
-        m for m in all_messages
-        if not m["is_thread_starter"] and len(m["content"]) <= 50
-    ]
+    long_msgs = [m for m in all_messages if not m["is_thread_starter"] and len(m["content"]) > 50]
+    short_msgs = [m for m in all_messages if not m["is_thread_starter"] and len(m["content"]) <= 50]
 
     channel_names = ", ".join(f"#{c.get('name', c.get('id', ''))}" for c in channels)
 
@@ -631,9 +626,7 @@ def collect_all(
         "slack_user_id": user_id,
         "display_name": profile.get("display_name", ""),
         "title": profile.get("title", ""),
-        "channels": [
-            {"id": c.get("id"), "name": c.get("name")} for c in channels
-        ],
+        "channels": [{"id": c.get("id"), "name": c.get("name")} for c in channels],
         "collected_at": datetime.now(timezone.utc).isoformat(),
         "files": results,
         "note": "免费版 Workspace 仅保留最近 90 天消息",
@@ -647,6 +640,7 @@ def collect_all(
 
 
 # ─── CLI 入口 ──────────────────────────────────────────────────────────────────
+
 
 def main() -> None:
     parser = argparse.ArgumentParser(
@@ -693,11 +687,7 @@ def main() -> None:
         parser.error("请提供 --name 参数")
 
     config = load_config()
-    output_dir = (
-        Path(args.output_dir)
-        if args.output_dir
-        else Path(f"./knowledge/{args.name}")
-    )
+    output_dir = Path(args.output_dir) if args.output_dir else Path(f"./knowledge/{args.name}")
 
     try:
         collect_all(

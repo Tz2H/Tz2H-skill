@@ -38,7 +38,6 @@ import tempfile
 from pathlib import Path
 from typing import Optional
 
-
 SUPPORTED_AUDIO_EXT = {".mp3", ".m4a", ".wav", ".flac", ".ogg", ".opus", ".aac"}
 SUPPORTED_VIDEO_EXT = {".mp4", ".mkv", ".webm", ".mov", ".avi"}
 
@@ -52,7 +51,7 @@ def download_audio(url: str, workdir: Path) -> Path:
     if not _has_cmd("yt-dlp"):
         raise SystemExit(
             "error: yt-dlp is required to download audio from URLs.\n"
-            "install: brew install yt-dlp  (macOS)  or  pip install yt-dlp"
+            "install: brew install yt-dlp  (macOS)  or  uv add yt-dlp"
         )
 
     workdir.mkdir(parents=True, exist_ok=True)
@@ -60,11 +59,15 @@ def download_audio(url: str, workdir: Path) -> Path:
 
     cmd = [
         "yt-dlp",
-        "-f", "bestaudio/best",
+        "-f",
+        "bestaudio/best",
         "-x",
-        "--audio-format", "mp3",
-        "--audio-quality", "5",
-        "-o", output_template,
+        "--audio-format",
+        "mp3",
+        "--audio-quality",
+        "5",
+        "-o",
+        output_template,
         url,
     ]
 
@@ -77,7 +80,9 @@ def download_audio(url: str, workdir: Path) -> Path:
     return audio_files[-1]
 
 
-def transcribe_with_faster_whisper(audio_path: Path, model_name: str, language: Optional[str]) -> str:
+def transcribe_with_faster_whisper(
+    audio_path: Path, model_name: str, language: Optional[str]
+) -> str:
     """Transcribe using faster-whisper (preferred backend)."""
     try:
         from faster_whisper import WhisperModel
@@ -113,7 +118,9 @@ def transcribe_with_faster_whisper(audio_path: Path, model_name: str, language: 
     return "\n".join(lines)
 
 
-def transcribe_with_openai_whisper(audio_path: Path, model_name: str, language: Optional[str]) -> str:
+def transcribe_with_openai_whisper(
+    audio_path: Path, model_name: str, language: Optional[str]
+) -> str:
     """Transcribe using the openai-whisper package (local fallback)."""
     try:
         import whisper
@@ -159,7 +166,7 @@ def transcribe_with_openai_api(audio_path: Path, language: Optional[str]) -> str
             file=sys.stderr,
         )
 
-    print(f"[transcribe] using OpenAI Whisper API", file=sys.stderr)
+    print("[transcribe] using OpenAI Whisper API", file=sys.stderr)
     client = OpenAI(api_key=api_key)
 
     with open(audio_path, "rb") as f:
@@ -199,9 +206,19 @@ def transcribe(
     attempts: list[tuple[str, callable]] = []
 
     if backend in {"auto", "faster-whisper"}:
-        attempts.append(("faster-whisper", lambda: transcribe_with_faster_whisper(audio_path, model_name, language)))
+        attempts.append(
+            (
+                "faster-whisper",
+                lambda: transcribe_with_faster_whisper(audio_path, model_name, language),
+            )
+        )
     if backend in {"auto", "openai-whisper"}:
-        attempts.append(("openai-whisper", lambda: transcribe_with_openai_whisper(audio_path, model_name, language)))
+        attempts.append(
+            (
+                "openai-whisper",
+                lambda: transcribe_with_openai_whisper(audio_path, model_name, language),
+            )
+        )
     if backend in {"auto", "openai-api"}:
         attempts.append(("openai-api", lambda: transcribe_with_openai_api(audio_path, language)))
 
@@ -218,9 +235,9 @@ def transcribe(
     raise SystemExit(
         "error: no working transcription backend found.\n"
         "install one of the following:\n"
-        "  pip install faster-whisper   (recommended, local, Apple Silicon friendly)\n"
-        "  pip install openai-whisper   (local alternative)\n"
-        "  pip install openai  + export OPENAI_API_KEY=sk-...   (remote fallback)"
+        "  uv add faster-whisper   (recommended, local, Apple Silicon friendly)\n"
+        "  uv add openai-whisper   (local alternative)\n"
+        "  uv add openai  + export OPENAI_API_KEY=sk-...   (remote fallback)"
     )
 
 
@@ -232,7 +249,9 @@ def main() -> None:
     src.add_argument("--url", help="Video/podcast URL (auto-downloads audio via yt-dlp)")
     src.add_argument("--input", help="Local audio or video file path")
 
-    parser.add_argument("--output", help="Output transcript path. Default: adjacent to input or /tmp")
+    parser.add_argument(
+        "--output", help="Output transcript path. Default: adjacent to input or /tmp"
+    )
     parser.add_argument(
         "--backend",
         default="auto",
@@ -256,7 +275,6 @@ def main() -> None:
     )
     args = parser.parse_args()
 
-    cleanup_audio = False
     audio_path: Path
 
     with tempfile.TemporaryDirectory(prefix="transcribe_") as tmpdir_str:
@@ -264,7 +282,6 @@ def main() -> None:
 
         if args.url:
             audio_path = download_audio(args.url, tmpdir)
-            cleanup_audio = not args.keep_audio
         else:
             input_path = Path(args.input).expanduser()
             if not input_path.exists():

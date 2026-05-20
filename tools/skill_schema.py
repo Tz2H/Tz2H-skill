@@ -15,7 +15,6 @@ from skill_presets import (
     normalize_research_profile,
 )
 
-
 SCHEMA_VERSION = "3"
 PRIMARY_ARTIFACTS = (
     "SKILL.md",
@@ -170,7 +169,9 @@ def enrich_skill_meta(meta: dict, slug: str, character: str | None = None) -> di
     result["character"] = resolved_character
     result["research_profile"] = resolved_research_profile
     result.setdefault("subtype", None)
-    result["preset"] = result.get("preset") or generation.get("preset") or preset["prompt_bundle"]["preset"]
+    result["preset"] = (
+        result.get("preset") or generation.get("preset") or preset["prompt_bundle"]["preset"]
+    )
 
     display_name = result.get("display_name") or result.get("name") or slug
     result["display_name"] = display_name
@@ -220,7 +221,9 @@ def enrich_skill_meta(meta: dict, slug: str, character: str | None = None) -> di
     generation.setdefault("research_profile_bundle", research_profile.get("prompt_bundle", {}))
     generation.setdefault("research_profile_references", research_profile.get("references", []))
     generation.setdefault("merge_strategy", research_profile.get("merge_strategy", "compact"))
-    generation.setdefault("quality_profile", research_profile.get("quality_profile", "budget-friendly"))
+    generation.setdefault(
+        "quality_profile", research_profile.get("quality_profile", "budget-friendly")
+    )
     generation.setdefault("knowledge_dirs", preset.get("knowledge_dirs", []))
     generation.setdefault("storage_root", preset.get("storage_root", preset["legacy_storage_root"]))
     if preset.get("research_tools"):

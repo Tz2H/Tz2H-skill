@@ -7,7 +7,6 @@ import tempfile
 import unittest
 from pathlib import Path
 
-
 TOOLS_DIR = Path(__file__).resolve().parents[1] / "tools"
 if str(TOOLS_DIR) not in sys.path:
     sys.path.insert(0, str(TOOLS_DIR))
@@ -266,7 +265,11 @@ class SkillWriterTest(unittest.TestCase):
             new_version = skill_writer.update_skill(
                 skill_dir,
                 work_patch="More work",
-                correction={"scene": "challenged", "wrong": "apologize", "correct": "ask for evidence"},
+                correction={
+                    "scene": "challenged",
+                    "wrong": "apologize",
+                    "correct": "ask for evidence",
+                },
             )
 
             saved_meta = json.loads((skill_dir / "meta.json").read_text(encoding="utf-8"))
@@ -324,7 +327,9 @@ class SkillWriterTest(unittest.TestCase):
             self.assertIn("写成明显自嘲型", persona_doc)
             self.assertEqual(persona_doc.count("## Correction Log"), 1)
 
-    def test_update_replaces_existing_markdown_sections_instead_of_appending_duplicates(self) -> None:
+    def test_update_replaces_existing_markdown_sections_instead_of_appending_duplicates(
+        self,
+    ) -> None:
         with tempfile.TemporaryDirectory() as tmp_dir:
             base_dir = Path(tmp_dir) / "skills" / "celebrity"
             skill_dir = skill_writer.create_skill(
@@ -443,7 +448,7 @@ class PromptPresetTest(unittest.TestCase):
     def test_character_prompt_bundles_exist(self) -> None:
         project_root = Path(__file__).resolve().parents[1]
 
-        for character in ("colleague", "relationship", "celebrity"):
+        for character in ("colleague", "relationship", "celebrity", "pedant"):
             preset = get_character_preset(character)
             for prompt_path in preset["prompt_bundle"].values():
                 if not isinstance(prompt_path, str) or not prompt_path.startswith("prompts/"):
@@ -472,7 +477,9 @@ class PromptPresetTest(unittest.TestCase):
                         f"missing profile reference for {character}/{profile_name}: {reference_path}",
                     )
 
-        friendly_prompt = (project_root / "prompts" / "celebrity" / "research.md").read_text(encoding="utf-8")
+        friendly_prompt = (project_root / "prompts" / "celebrity" / "research.md").read_text(
+            encoding="utf-8"
+        )
         self.assertIn("01_core_profile.md", friendly_prompt)
         self.assertIn("03_expression_and_reception.md", friendly_prompt)
         self.assertIn(
@@ -482,11 +489,7 @@ class PromptPresetTest(unittest.TestCase):
         self.assertIn("actual inspected pages", friendly_prompt)
 
         strict_prompt = (
-            project_root
-            / "prompts"
-            / "celebrity"
-            / "budget_unfriendly"
-            / "research.md"
+            project_root / "prompts" / "celebrity" / "budget_unfriendly" / "research.md"
         ).read_text(encoding="utf-8")
         self.assertIn("01_writings.md", strict_prompt)
         self.assertIn("06_timeline.md", strict_prompt)

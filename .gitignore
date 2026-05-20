@@ -16,6 +16,8 @@ __pycache__/
 .venv/
 venv/
 *.egg-info/
+.uv-cache/
+.ruff_cache/
 
 # Config with credentials
 ~/.Tz2H-skill/
@@ -32,3 +34,7 @@ knowledge/
 # OS
 .DS_Store
 Thumbs.db
+
+#AI generated content
+.scratch/
+AGENTS.md

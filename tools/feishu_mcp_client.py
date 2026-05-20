@@ -33,19 +33,18 @@
 
 from __future__ import annotations
 
-import os
-import sys
-import json
 import argparse
+import json
+import os
 import subprocess
+import sys
 from pathlib import Path
-from typing import Optional
-
 
 CONFIG_PATH = Path.home() / ".Tz2H-skill" / "feishu_config.json"
 
 
 # ─── 配置管理 ────────────────────────────────────────────────────────────────
+
 
 def load_config() -> dict:
     if CONFIG_PATH.exists():
@@ -89,6 +88,7 @@ def setup_config() -> None:
 
 # ─── MCP 调用封装 ─────────────────────────────────────────────────────────────
 
+
 def call_mcp(tool: str, params: dict, config: dict) -> dict:
     """
     通过 npx 调用 feishu-mcp 工具。
@@ -101,15 +101,17 @@ def call_mcp(tool: str, params: dict, config: dict) -> dict:
     if config.get("mode") == "user" and config.get("user_token"):
         env["FEISHU_USER_ACCESS_TOKEN"] = config["user_token"]
 
-    payload = json.dumps({
-        "jsonrpc": "2.0",
-        "method": "tools/call",
-        "params": {
-            "name": tool,
-            "arguments": params,
-        },
-        "id": 1,
-    })
+    payload = json.dumps(
+        {
+            "jsonrpc": "2.0",
+            "method": "tools/call",
+            "params": {
+                "name": tool,
+                "arguments": params,
+            },
+            "id": 1,
+        }
+    )
 
     try:
         result = subprocess.run(
@@ -132,6 +134,7 @@ def call_mcp(tool: str, params: dict, config: dict) -> dict:
 def extract_doc_token(url: str) -> tuple[str, str]:
     """从飞书 URL 中提取文档 token 和类型"""
     import re
+
     patterns = [
         (r"/wiki/([A-Za-z0-9]+)", "wiki"),
         (r"/docx/([A-Za-z0-9]+)", "docx"),
@@ -147,6 +150,7 @@ def extract_doc_token(url: str) -> tuple[str, str]:
 
 
 # ─── 功能函数 ─────────────────────────────────────────────────────────────────
+
 
 def fetch_doc_via_mcp(url: str, config: dict) -> str:
     """通过 MCP 读取飞书文档或 Wiki"""
@@ -205,10 +209,7 @@ def fetch_messages_via_mcp(
 
     # 过滤目标人物
     if target_name:
-        messages = [
-            m for m in messages
-            if target_name in str(m.get("sender", {}).get("name", ""))
-        ]
+        messages = [m for m in messages if target_name in str(m.get("sender", {}).get("name", ""))]
 
     # 分类输出
     long_msgs = [m for m in messages if len(str(m.get("content", ""))) > 50]
@@ -251,6 +252,7 @@ def list_wiki_docs(space_id: str, config: dict) -> str:
 
 
 # ─── CLI ─────────────────────────────────────────────────────────────────────
+
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="飞书 MCP 客户端")

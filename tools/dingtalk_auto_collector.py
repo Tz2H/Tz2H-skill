@@ -14,7 +14,7 @@
   消息记录部分自动使用 Playwright 浏览器方案采集。
 
 前置：
-  pip3 install requests playwright
+  uv sync --all-extras
   playwright install chromium
   python3 dingtalk_auto_collector.py --setup
 
@@ -26,19 +26,19 @@
 
 from __future__ import annotations
 
+import argparse
 import json
+import platform
 import sys
 import time
-import argparse
-import platform
-from pathlib import Path
 from datetime import datetime, timezone
+from pathlib import Path
 from typing import Optional
 
 try:
     import requests
 except ImportError:
-    print("错误：请先安装依赖：pip3 install requests", file=sys.stderr)
+    print("错误：请先安装依赖：uv sync --all-extras", file=sys.stderr)
     sys.exit(1)
 
 
@@ -47,6 +47,7 @@ API_BASE = "https://api.dingtalk.com"
 
 
 # ─── 配置 ────────────────────────────────────────────────────────────────────
+
 
 def load_config() -> dict:
     if not CONFIG_PATH.exists():
@@ -85,7 +86,7 @@ def setup_config() -> None:
     save_config(config)
     print(f"\n✅ 配置已保存到 {CONFIG_PATH}")
     print("\n注意：消息记录采集需要 Playwright，请确认已安装：")
-    print("  pip3 install playwright && playwright install chromium")
+    print("  uv sync --all-extras && uv run playwright install chromium")
 
 
 # ─── Token ───────────────────────────────────────────────────────────────────
@@ -140,6 +141,7 @@ def api_post(path: str, body: dict, config: dict) -> dict:
 
 # ─── 用户搜索 ─────────────────────────────────────────────────────────────────
 
+
 def find_user(name: str, config: dict) -> Optional[dict]:
     """通过姓名搜索钉钉用户"""
     print(f"  搜索用户：{name} ...", file=sys.stderr)
@@ -163,14 +165,17 @@ def find_user(name: str, config: dict) -> Optional[dict]:
 
     if len(users) == 1:
         u = users[0]
-        print(f"  找到用户：{u.get('name')}（{u.get('deptNameList', [''])[0] if isinstance(u.get('deptNameList'), list) else ''}）", file=sys.stderr)
+        print(
+            f"  找到用户：{u.get('name')}（{u.get('deptNameList', [''])[0] if isinstance(u.get('deptNameList'), list) else ''}）",
+            file=sys.stderr,
+        )
         return u
 
     print(f"\n  找到 {len(users)} 个结果，请选择：")
     for i, u in enumerate(users):
         dept = u.get("deptNameList", [""])
         dept_str = dept[0] if isinstance(dept, list) and dept else ""
-        print(f"    [{i+1}] {u.get('name')}  {dept_str}  {u.get('unionId', '')}")
+        print(f"    [{i + 1}] {u.get('name')}  {dept_str}  {u.get('unionId', '')}")
 
     choice = input("\n  选择编号（默认 1）：").strip() or "1"
     try:
@@ -213,6 +218,7 @@ def search_users_by_dept(name: str, config: dict, dept_id: int = 1, depth: int =
 
 # ─── 文档采集 ─────────────────────────────────────────────────────────────────
 
+
 def list_workspaces(config: dict) -> list:
     """获取所有工作空间"""
     data = api_get("/v1.0/doc/workspaces", {"maxResults": 50}, config)
@@ -242,14 +248,16 @@ def search_docs_by_user(user_id: str, name: str, doc_limit: int, config: dict) -
         # 过滤：只保留目标用户创建的
         if user_id and creator_id and creator_id != user_id:
             continue
-        docs.append({
-            "title": item.get("title", "无标题"),
-            "docId": item.get("docId", ""),
-            "spaceId": item.get("spaceId", ""),
-            "type": item.get("docType", ""),
-            "url": item.get("shareUrl", ""),
-            "creator": item.get("creatorName", name),
-        })
+        docs.append(
+            {
+                "title": item.get("title", "无标题"),
+                "docId": item.get("docId", ""),
+                "spaceId": item.get("spaceId", ""),
+                "type": item.get("docType", ""),
+                "url": item.get("shareUrl", ""),
+                "creator": item.get("creatorName", name),
+            }
+        )
 
     if not docs:
         # 方式二：遍历工作空间找文档
@@ -268,14 +276,16 @@ def search_docs_by_user(user_id: str, name: str, doc_limit: int, config: dict) -
                 creator_id = f.get("creatorId", "")
                 if user_id and creator_id and creator_id != user_id:
                     continue
-                docs.append({
-                    "title": f.get("fileName", "无标题"),
-                    "docId": f.get("docId", ""),
-                    "spaceId": ws_id,
-                    "type": f.get("docType", ""),
-                    "url": f.get("shareUrl", ""),
-                    "creator": name,
-                })
+                docs.append(
+                    {
+                        "title": f.get("fileName", "无标题"),
+                        "docId": f.get("docId", ""),
+                        "spaceId": ws_id,
+                        "type": f.get("docType", ""),
+                        "url": f.get("shareUrl", ""),
+                        "creator": name,
+                    }
+                )
 
     print(f"  找到 {len(docs)} 篇文档", file=sys.stderr)
     return docs[:doc_limit]
@@ -347,7 +357,7 @@ def collect_docs(user: dict, doc_limit: int, config: dict) -> str:
         content = fetch_doc_content(doc_id, space_id, config)
 
         if not content or len(content.strip()) < 20:
-            print(f"    内容为空，跳过", file=sys.stderr)
+            print("    内容为空，跳过", file=sys.stderr)
             continue
 
         lines += [
@@ -364,6 +374,7 @@ def collect_docs(user: dict, doc_limit: int, config: dict) -> str:
 
 
 # ─── 多维表格 ─────────────────────────────────────────────────────────────────
+
 
 def search_bitables(user_id: str, name: str, config: dict) -> list:
     """搜索目标用户的多维表格"""
@@ -420,7 +431,9 @@ def fetch_bitable_content(base_id: str, config: dict) -> str:
             {"maxResults": 200},
             config,
         )
-        records = records_data.get("records", []) or records_data.get("result", {}).get("records", [])
+        records = records_data.get("records", []) or records_data.get("result", {}).get(
+            "records", []
+        )
 
         lines.append(f"### 表：{sheet_name}")
         lines.append("")
@@ -436,8 +449,7 @@ def fetch_bitable_content(base_id: str, config: dict) -> str:
                 val = row_data.get(f, "")
                 if isinstance(val, list):
                     val = " ".join(
-                        v.get("text", str(v)) if isinstance(v, dict) else str(v)
-                        for v in val
+                        v.get("text", str(v)) if isinstance(v, dict) else str(v) for v in val
                     )
                 row.append(str(val).replace("|", "｜").replace("\n", " "))
             lines.append("| " + " | ".join(row) + " |")
@@ -481,6 +493,7 @@ def collect_bitables(user: dict, config: dict) -> str:
 
 # ─── 消息记录（浏览器方案）────────────────────────────────────────────────────
 
+
 def get_default_chrome_profile() -> str:
     system = platform.system()
     if system == "Darwin":
@@ -489,6 +502,7 @@ def get_default_chrome_profile() -> str:
         return str(Path.home() / ".config/google-chrome/Default")
     elif system == "Windows":
         import os
+
         return str(Path(os.environ.get("LOCALAPPDATA", "")) / "Google/Chrome/User Data/Default")
     return str(Path.home() / ".config/google-chrome/Default")
 
@@ -506,10 +520,8 @@ def collect_messages_browser(
         return (
             "# 消息记录\n\n"
             "⚠️  未安装 Playwright，无法采集消息记录。\n"
-            "请运行：pip3 install playwright && playwright install chromium\n"
+            "请运行：uv sync --all-extras && uv run playwright install chromium\n"
         )
-
-    import re
 
     profile = chrome_profile or get_default_chrome_profile()
     print(f"  启动浏览器抓取钉钉消息（{'无头' if headless else '有界面'}）...", file=sys.stderr)
@@ -550,9 +562,9 @@ def collect_messages_browser(
             # 点击搜索框
             search_selectors = [
                 '[placeholder*="搜索"]',
-                '.search-input',
+                ".search-input",
                 '[data-testid="search"]',
-                '.im-search',
+                ".im-search",
             ]
             for sel in search_selectors:
                 el = page.query_selector(sel)
@@ -565,9 +577,9 @@ def collect_messages_browser(
 
             # 点击第一个结果
             result_selectors = [
-                '.search-result-item',
-                '.contact-item',
-                '.result-item',
+                ".search-result-item",
+                ".contact-item",
+                ".result-item",
             ]
             for sel in result_selectors:
                 result = page.query_selector(sel)
@@ -669,6 +681,7 @@ def collect_messages_browser(
 
 # ─── 主流程 ───────────────────────────────────────────────────────────────────
 
+
 def collect_all(
     name: str,
     output_dir: Path,
@@ -690,7 +703,10 @@ def collect_all(
         print(f"❌ 未找到用户：{name}", file=sys.stderr)
         sys.exit(1)
 
-    print(f"  用户 ID：{user.get('userId', '')}  部门：{user.get('deptNameList', [''])[0] if isinstance(user.get('deptNameList'), list) and user.get('deptNameList') else ''}", file=sys.stderr)
+    print(
+        f"  用户 ID：{user.get('userId', '')}  部门：{user.get('deptNameList', [''])[0] if isinstance(user.get('deptNameList'), list) and user.get('deptNameList') else ''}",
+        file=sys.stderr,
+    )
 
     # Step 2: 文档
     print(f"\n📄 采集文档（上限 {doc_limit} 篇）...", file=sys.stderr)
@@ -704,7 +720,7 @@ def collect_all(
         print(f"  ⚠️  文档采集失败：{e}", file=sys.stderr)
 
     # Step 3: 多维表格
-    print(f"\n📊 采集多维表格 ...", file=sys.stderr)
+    print("\n📊 采集多维表格 ...", file=sys.stderr)
     try:
         bitable_content = collect_bitables(user, config)
         bt_path = output_dir / "bitables.txt"
@@ -717,7 +733,7 @@ def collect_all(
     # Step 4: 消息记录（浏览器方案）
     if not skip_messages:
         print(f"\n📨 采集消息记录（浏览器方案，上限 {msg_limit} 条）...", file=sys.stderr)
-        print(f"  ℹ️  钉钉 API 不支持历史消息拉取，自动切换浏览器方案", file=sys.stderr)
+        print("  ℹ️  钉钉 API 不支持历史消息拉取，自动切换浏览器方案", file=sys.stderr)
         try:
             msg_content = collect_messages_browser(name, msg_limit, chrome_profile, headless)
             msg_path = output_dir / "messages.txt"
@@ -727,7 +743,7 @@ def collect_all(
         except Exception as e:
             print(f"  ⚠️  消息采集失败：{e}", file=sys.stderr)
     else:
-        print(f"\n📨 跳过消息采集（--skip-messages）", file=sys.stderr)
+        print("\n📨 跳过消息采集（--skip-messages）", file=sys.stderr)
 
     # 写摘要
     summary = {
@@ -757,7 +773,9 @@ def main() -> None:
     parser.add_argument("--doc-limit", type=int, default=20, help="最多采集文档篇数（默认 20）")
     parser.add_argument("--skip-messages", action="store_true", help="跳过消息记录采集")
     parser.add_argument("--chrome-profile", default=None, help="Chrome Profile 路径")
-    parser.add_argument("--show-browser", action="store_true", help="显示浏览器窗口（调试/首次登录）")
+    parser.add_argument(
+        "--show-browser", action="store_true", help="显示浏览器窗口（调试/首次登录）"
+    )
 
     args = parser.parse_args()
 

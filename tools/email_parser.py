@@ -12,40 +12,41 @@
     python email_parser.py --file inbox.mbox --target "张三" --output output.txt
 """
 
+import argparse
 import email
 import email.policy
 import mailbox
 import re
 import sys
-import argparse
-from pathlib import Path
 from email.header import decode_header
+from email.message import Message
 from html.parser import HTMLParser
+from pathlib import Path
 
 
 class HTMLTextExtractor(HTMLParser):
     """从 HTML 邮件内容中提取纯文本"""
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
-        self.result = []
+        self.result: list[str] = []
         self._skip = False
 
-    def handle_starttag(self, tag, attrs):
+    def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
         if tag in ("script", "style"):
             self._skip = True
 
-    def handle_endtag(self, tag):
+    def handle_endtag(self, tag: str) -> None:
         if tag in ("script", "style"):
             self._skip = False
         if tag in ("p", "br", "div", "tr"):
             self.result.append("\n")
 
-    def handle_data(self, data):
+    def handle_data(self, data: str) -> None:
         if not self._skip:
             self.result.append(data)
 
-    def get_text(self):
+    def get_text(self) -> str:
         return re.sub(r"\n{3,}", "\n\n", "".join(self.result)).strip()
 
 
@@ -67,7 +68,7 @@ def decode_mime_str(s: str) -> str:
     return "".join(result)
 
 
-def extract_email_body(msg) -> str:
+def extract_email_body(msg: Message) -> str:
     """从邮件对象中提取正文文本"""
     body = ""
 
@@ -139,12 +140,14 @@ def parse_eml_file(file_path: str, target: str) -> list[dict]:
     if not body:
         return []
 
-    return [{
-        "from": decode_mime_str(from_field),
-        "subject": subject,
-        "date": date,
-        "body": body,
-    }]
+    return [
+        {
+            "from": decode_mime_str(from_field),
+            "subject": subject,
+            "date": date,
+            "body": body,
+        }
+    ]
 
 
 def parse_mbox_file(file_path: str, target: str) -> list[dict]:
@@ -164,12 +167,14 @@ def parse_mbox_file(file_path: str, target: str) -> list[dict]:
         if not body:
             continue
 
-        results.append({
-            "from": decode_mime_str(from_field),
-            "subject": subject,
-            "date": date,
-            "body": body,
-        })
+        results.append(
+            {
+                "from": decode_mime_str(from_field),
+                "subject": subject,
+                "date": date,
+                "body": body,
+            }
+        )
 
     return results
 
@@ -209,12 +214,14 @@ def parse_txt_file(file_path: str, target: str) -> list[dict]:
         if not body:
             continue
 
-        results.append({
-            "from": from_field,
-            "subject": subject_match.group(1).strip() if subject_match else "",
-            "date": date_match.group(1).strip() if date_match else "",
-            "body": body,
-        })
+        results.append(
+            {
+                "from": from_field,
+                "subject": subject_match.group(1).strip() if subject_match else "",
+                "date": date_match.group(1).strip() if date_match else "",
+                "body": body,
+            }
+        )
 
     return results
 
@@ -231,9 +238,26 @@ def classify_emails(emails: list[dict]) -> dict:
     daily_emails = []
 
     decision_keywords = [
-        "同意", "不同意", "建议", "方案", "觉得", "应该", "决定", "确认",
-        "approve", "reject", "lgtm", "suggest", "recommend", "think",
-        "我的看法", "我认为", "我觉得", "需要", "必须", "不需要"
+        "同意",
+        "不同意",
+        "建议",
+        "方案",
+        "觉得",
+        "应该",
+        "决定",
+        "确认",
+        "approve",
+        "reject",
+        "lgtm",
+        "suggest",
+        "recommend",
+        "think",
+        "我的看法",
+        "我认为",
+        "我觉得",
+        "需要",
+        "必须",
+        "不需要",
     ]
 
     for e in emails:
@@ -257,7 +281,7 @@ def classify_emails(emails: list[dict]) -> dict:
 def format_output(target: str, classified: dict) -> str:
     """格式化输出，供 AI 分析使用"""
     lines = [
-        f"# 邮件提取结果",
+        "# 邮件提取结果",
         f"目标人物：{target}",
         f"总邮件数：{classified['total_count']}",
         "",
@@ -298,7 +322,7 @@ def format_output(target: str, classified: dict) -> str:
     return "\n".join(lines)
 
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser(description="解析邮件文件，提取目标人发出的邮件")
     parser.add_argument("--file", required=True, help="输入文件路径（.eml / .mbox / .txt）")
     parser.add_argument("--target", required=True, help="目标人物（邮箱地址或姓名）")

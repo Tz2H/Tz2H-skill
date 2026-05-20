@@ -8,9 +8,11 @@ import platform
 from pathlib import Path
 
 from install_generated_skill_common import (
-    render_installed_markdown,
     install_generated_skill as install_generated_skill_common,
+)
+from install_generated_skill_common import (
     load_generated_meta,
+    render_installed_markdown,
 )
 
 
@@ -80,8 +82,12 @@ def main() -> None:
         default=str(default_claude_commands_dir()),
         help="Target Claude Code commands directory",
     )
-    parser.add_argument("--force", action="store_true", help="Overwrite an existing installed skill")
-    parser.add_argument("--dry-run", action="store_true", help="Resolve install paths without writing files")
+    parser.add_argument(
+        "--force", action="store_true", help="Overwrite an existing installed skill"
+    )
+    parser.add_argument(
+        "--dry-run", action="store_true", help="Resolve install paths without writing files"
+    )
     parser.add_argument(
         "--install-command-shim",
         action="store_true",

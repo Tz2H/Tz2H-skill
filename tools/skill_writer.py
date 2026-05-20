@@ -33,7 +33,6 @@ from skill_schema import (
     sync_legacy_fields,
 )
 
-
 SKILL_MD_TEMPLATE_EN = """\
 ---
 name: {combined_name}
@@ -133,11 +132,7 @@ def slugify(name: str) -> str:
 
 def language_code(meta: dict) -> str:
     """Return the preferred language code for rendered artifacts."""
-    return (
-        meta.get("language")
-        or meta.get("classification", {}).get("language")
-        or "en"
-    ).lower()
+    return (meta.get("language") or meta.get("classification", {}).get("language") or "en").lower()
 
 
 def prefers_chinese(meta: dict) -> bool:
@@ -286,13 +281,15 @@ def merge_markdown_patch(existing_content: str, patch_content: str) -> str:
 
         replaced_any = True
         section_start = section_match.start()
-        next_section = re.search(r"(?m)^##\s+.+$", merged[section_match.end():])
-        section_end = (
-            section_match.end() + next_section.start()
-            if next_section
-            else len(merged)
+        next_section = re.search(r"(?m)^##\s+.+$", merged[section_match.end() :])
+        section_end = section_match.end() + next_section.start() if next_section else len(merged)
+        merged = (
+            merged[:section_start].rstrip()
+            + "\n\n"
+            + patch_section
+            + "\n\n"
+            + merged[section_end:].lstrip()
         )
-        merged = merged[:section_start].rstrip() + "\n\n" + patch_section + "\n\n" + merged[section_end:].lstrip()
 
     if replaced_any:
         return merged.strip() + "\n"
@@ -302,7 +299,9 @@ def merge_markdown_patch(existing_content: str, patch_content: str) -> str:
 def apply_correction(persona_content: str, correction: dict) -> str:
     """Append a normalized correction entry to persona content."""
     scene = correction.get("scene", "general")
-    correction_line = f"\n- [{scene}] should not {correction['wrong']}; should {correction['correct']}"
+    correction_line = (
+        f"\n- [{scene}] should not {correction['wrong']}; should {correction['correct']}"
+    )
     target = "## Correction Log"
     legacy_target = "## Correction 记录"
     if target in persona_content:
@@ -310,14 +309,14 @@ def apply_correction(persona_content: str, correction: dict) -> str:
         rest = persona_content[insert_pos:]
         placeholder = "\n\n(No entries yet)"
         if rest.startswith(placeholder):
-            rest = rest[len(placeholder):]
+            rest = rest[len(placeholder) :]
         return persona_content[:insert_pos] + correction_line + rest
     if legacy_target in persona_content:
         insert_pos = persona_content.index(legacy_target) + len(legacy_target)
         rest = persona_content[insert_pos:]
         legacy_placeholder = "\n\n（暂无记录）"
         if rest.startswith(legacy_placeholder):
-            rest = rest[len(legacy_placeholder):]
+            rest = rest[len(legacy_placeholder) :]
         return persona_content[:insert_pos] + correction_line + rest
     return persona_content + f"\n\n## Correction Log\n{correction_line}\n"
 
@@ -336,7 +335,11 @@ def normalize_corrections(correction: dict | list[dict] | None) -> list[dict]:
         for key in ("persona_corrections", "corrections"):
             value = correction.get(key)
             if isinstance(value, list):
-                return [item for item in value if isinstance(item, dict) and {"wrong", "correct"} <= item.keys()]
+                return [
+                    item
+                    for item in value
+                    if isinstance(item, dict) and {"wrong", "correct"} <= item.keys()
+                ]
 
     return []
 
@@ -379,7 +382,9 @@ def update_skill(
         for item in corrections:
             persona_content = apply_correction(persona_content, item)
         if corrections:
-            meta["generation"]["corrections_count"] = meta.get("corrections_count", 0) + len(corrections)
+            meta["generation"]["corrections_count"] = meta.get("corrections_count", 0) + len(
+                corrections
+            )
 
     meta["lifecycle"]["version"] = new_version
     meta["lifecycle"]["updated_at"] = now_iso()
@@ -411,17 +416,19 @@ def list_skills(base_dir: Path) -> list[dict]:
         except Exception:
             continue
 
-        skills.append({
-            "slug": meta.get("slug", skill_dir.name),
-            "kind": meta.get("kind", "meta-skill"),
-            "character": meta.get("character", "colleague"),
-            "research_profile": meta.get("research_profile", "standard"),
-            "name": meta.get("display_name", skill_dir.name),
-            "identity": build_identity_string(meta),
-            "version": meta.get("version", "v1"),
-            "updated_at": meta.get("updated_at", ""),
-            "corrections_count": meta.get("corrections_count", 0),
-        })
+        skills.append(
+            {
+                "slug": meta.get("slug", skill_dir.name),
+                "kind": meta.get("kind", "meta-skill"),
+                "character": meta.get("character", "colleague"),
+                "research_profile": meta.get("research_profile", "standard"),
+                "name": meta.get("display_name", skill_dir.name),
+                "identity": build_identity_string(meta),
+                "version": meta.get("version", "v1"),
+                "updated_at": meta.get("updated_at", ""),
+                "corrections_count": meta.get("corrections_count", 0),
+            }
+        )
 
     return skills
 
@@ -609,7 +616,9 @@ def main() -> None:
         return
 
     slug = args.slug
-    base_dir = resolve_existing_storage_root(requested_character, slug=slug, base_dir_arg=args.base_dir)
+    base_dir = resolve_existing_storage_root(
+        requested_character, slug=slug, base_dir_arg=args.base_dir
+    )
     skill_dir = base_dir / slug
     if not skill_dir.exists():
         print(f"error: skill directory not found: {skill_dir}", file=sys.stderr)
@@ -617,9 +626,7 @@ def main() -> None:
 
     work_patch = Path(args.work_patch).read_text(encoding="utf-8") if args.work_patch else None
     persona_patch = (
-        Path(args.persona_patch).read_text(encoding="utf-8")
-        if args.persona_patch
-        else None
+        Path(args.persona_patch).read_text(encoding="utf-8") if args.persona_patch else None
     )
     correction = (
         json.loads(Path(args.correction_json).read_text(encoding="utf-8"))

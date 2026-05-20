@@ -1,20 +1,19 @@
 from __future__ import annotations
 
+import sys
 import tempfile
 import unittest
 from pathlib import Path
-import sys
-
 
 TOOLS_DIR = Path(__file__).resolve().parents[1] / "tools"
 if str(TOOLS_DIR) not in sys.path:
     sys.path.insert(0, str(TOOLS_DIR))
 
+import skill_writer  # noqa: E402
 from install_claude_generated_skill import (  # noqa: E402
     install_generated_skill,
     should_install_command_shim,
 )
-import skill_writer  # noqa: E402
 
 
 class ClaudeGeneratedSkillInstallTest(unittest.TestCase):

@@ -1,20 +1,23 @@
 from __future__ import annotations
 
+import sys
 import tempfile
 import unittest
 from pathlib import Path
-import sys
-
 
 TOOLS_DIR = Path(__file__).resolve().parents[1] / "tools"
 if str(TOOLS_DIR) not in sys.path:
     sys.path.insert(0, str(TOOLS_DIR))
 
-from install_codex_generated_skill import install_generated_skill as install_codex_generated_skill  # noqa: E402
-from install_codex_skill import install_skill as install_codex_skill  # noqa: E402
-from install_openclaw_generated_skill import install_generated_skill as install_openclaw_generated_skill  # noqa: E402
-from install_openclaw_skill import install_skill as install_openclaw_skill  # noqa: E402
 import skill_writer  # noqa: E402
+from install_codex_generated_skill import (  # noqa: E402
+    install_generated_skill as install_codex_generated_skill,
+)
+from install_codex_skill import install_skill as install_codex_skill  # noqa: E402
+from install_openclaw_generated_skill import (  # noqa: E402
+    install_generated_skill as install_openclaw_generated_skill,
+)
+from install_openclaw_skill import install_skill as install_openclaw_skill  # noqa: E402
 
 
 class OpenClawAndCodexInstallTest(unittest.TestCase):

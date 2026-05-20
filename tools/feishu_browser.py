@@ -11,8 +11,8 @@
   - 飞书消息记录（指定群聊）
 
 安装：
-  pip install playwright
-  playwright install chromium
+  uv sync --all-extras
+  uv run playwright install chromium
 
 用法：
   python3 feishu_browser.py --url "https://xxx.feishu.cn/wiki/xxx" --output out.txt
@@ -23,13 +23,12 @@
 
 from __future__ import annotations
 
-import sys
-import time
-import json
 import argparse
 import platform
+import sys
+import time
 from pathlib import Path
-from typing import Optional
+from typing import Any, Optional
 
 
 def get_default_chrome_profile() -> str:
@@ -41,11 +40,12 @@ def get_default_chrome_profile() -> str:
         return str(Path.home() / ".config/google-chrome/Default")
     elif system == "Windows":
         import os
+
         return str(Path(os.environ.get("LOCALAPPDATA", "")) / "Google/Chrome/User Data/Default")
     return str(Path.home() / ".config/google-chrome/Default")
 
 
-def make_context(playwright, chrome_profile: Optional[str], headless: bool):
+def make_context(playwright: Any, chrome_profile: Optional[str], headless: bool) -> Any:
     """创建复用登录态的浏览器上下文"""
     profile = chrome_profile or get_default_chrome_profile()
     try:
@@ -82,7 +82,7 @@ def detect_page_type(url: str) -> str:
         return "unknown"
 
 
-def fetch_doc(page, url: str) -> str:
+def fetch_doc(page: Any, url: str) -> str:
     """抓取飞书文档或 Wiki 的文本内容"""
     page.goto(url, wait_until="domcontentloaded", timeout=30000)
 
@@ -128,7 +128,7 @@ def fetch_doc(page, url: str) -> str:
     return text.strip()
 
 
-def fetch_sheet(page, url: str) -> str:
+def fetch_sheet(page: Any, url: str) -> str:
     """抓取飞书表格，转为 CSV 格式"""
     page.goto(url, wait_until="domcontentloaded", timeout=30000)
 
@@ -179,19 +179,23 @@ def fetch_sheet(page, url: str) -> str:
     return page.inner_text("body")
 
 
-def fetch_messages(page, chat_name: str, target_name: str, limit: int = 500) -> str:
+def fetch_messages(page: Any, chat_name: str, target_name: str, limit: int = 500) -> str:
     """
     抓取指定群聊中目标人物的消息记录。
     需要先导航到飞书 Web 版消息页面。
     """
     # 打开飞书消息页
-    page.goto("https://applink.feishu.cn/client/chat/open", wait_until="domcontentloaded", timeout=20000)
+    page.goto(
+        "https://applink.feishu.cn/client/chat/open", wait_until="domcontentloaded", timeout=20000
+    )
     time.sleep(3)
 
     # 尝试搜索群聊
     try:
         # 点击搜索
-        search_btn = page.query_selector('[data-test-id="search-btn"], .search-button, [placeholder*="搜索"]')
+        search_btn = page.query_selector(
+            '[data-test-id="search-btn"], .search-button, [placeholder*="搜索"]'
+        )
         if search_btn:
             search_btn.click()
             time.sleep(1)
@@ -199,7 +203,9 @@ def fetch_messages(page, chat_name: str, target_name: str, limit: int = 500) -> 
             time.sleep(2)
 
             # 选择第一个结果
-            result = page.query_selector('.search-result-item:first-child, .im-search-item:first-child')
+            result = page.query_selector(
+                ".search-result-item:first-child, .im-search-item:first-child"
+            )
             if result:
                 result.click()
                 time.sleep(2)
@@ -209,8 +215,10 @@ def fetch_messages(page, chat_name: str, target_name: str, limit: int = 500) -> 
         input()
 
     # 向上滚动加载历史消息
-    print(f"正在加载消息历史...", file=sys.stderr)
-    messages_container = page.query_selector('.message-list, .im-message-list, [data-testid="message-list"]')
+    print("正在加载消息历史...", file=sys.stderr)
+    messages_container = page.query_selector(
+        '.message-list, .im-message-list, [data-testid="message-list"]'
+    )
 
     if messages_container:
         for _ in range(10):  # 滚动 10 次
@@ -277,7 +285,7 @@ def fetch_messages(page, chat_name: str, target_name: str, limit: int = 500) -> 
     short_msgs = [m for m in messages if len(m.get("content", "")) <= 50]
 
     lines = [
-        f"# 飞书消息记录（浏览器抓取）",
+        "# 飞书消息记录（浏览器抓取）",
         f"群聊：{chat_name}",
         f"目标人物：{target_name}",
         f"共 {len(messages)} 条消息",
@@ -305,7 +313,9 @@ def main() -> None:
     parser.add_argument("--target", help="目标人物姓名（只提取此人的消息）")
     parser.add_argument("--limit", type=int, default=500, help="最多抓取消息条数（默认 500）")
     parser.add_argument("--output", default=None, help="输出文件路径（默认打印到 stdout）")
-    parser.add_argument("--chrome-profile", default=None, help="Chrome Profile 路径（默认自动检测）")
+    parser.add_argument(
+        "--chrome-profile", default=None, help="Chrome Profile 路径（默认自动检测）"
+    )
     parser.add_argument("--headless", action="store_true", help="无头模式（不显示浏览器窗口）")
     parser.add_argument("--show-browser", action="store_true", help="显示浏览器窗口（调试用）")
 
@@ -317,7 +327,10 @@ def main() -> None:
     try:
         from playwright.sync_api import sync_playwright
     except ImportError:
-        print("错误：请先安装 Playwright：pip install playwright && playwright install chromium", file=sys.stderr)
+        print(
+            "错误：请先安装 Playwright：uv sync --all-extras && uv run playwright install chromium",
+            file=sys.stderr,
+        )
         sys.exit(1)
 
     headless = args.headless and not args.show_browser

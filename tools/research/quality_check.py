@@ -9,7 +9,6 @@ import re
 from pathlib import Path
 from urllib.parse import urlparse
 
-
 GENERIC_URL_PATHS = {
     "",
     "/",
@@ -115,13 +114,21 @@ def load_research_metrics(path: Path) -> dict:
             "research_audit_present": audit_path.exists(),
             "synthesis_review_present": synthesis_path.exists(),
             "validation_review_present": validation_path.exists(),
-            "research_audit_pass": review_status_is_pass(audit_path.read_text(encoding="utf-8")) if audit_path.exists() else False,
-            "validation_review_pass": review_status_is_pass(validation_path.read_text(encoding="utf-8")) if validation_path.exists() else False,
+            "research_audit_pass": review_status_is_pass(audit_path.read_text(encoding="utf-8"))
+            if audit_path.exists()
+            else False,
+            "validation_review_pass": review_status_is_pass(
+                validation_path.read_text(encoding="utf-8")
+            )
+            if validation_path.exists()
+            else False,
         }
 
     summary_text = summary_path.read_text(encoding="utf-8")
     audit_text = audit_path.read_text(encoding="utf-8") if audit_path.exists() else ""
-    validation_text = validation_path.read_text(encoding="utf-8") if validation_path.exists() else ""
+    validation_text = (
+        validation_path.read_text(encoding="utf-8") if validation_path.exists() else ""
+    )
     return {
         "files_scanned": extract_summary_metric(summary_text, "Files scanned"),
         "unique_urls": extract_summary_metric(summary_text, "Unique URLs"),
@@ -133,17 +140,29 @@ def load_research_metrics(path: Path) -> dict:
         "gap_bullets": extract_summary_metric(summary_text, "Gap bullets"),
         "long_quote_lines": extract_summary_metric(summary_text, "Potential long quote lines"),
         "track_coverage_count": extract_summary_metric(summary_text, "Track coverage count"),
-        "high_tier_sources": extract_summary_metric(summary_text, "Tier 1-3 (high-quality primary)"),
-        "mid_tier_sources": extract_summary_metric(summary_text, "Tier 4-5 (medium / short-form firsthand)"),
-        "low_tier_sources": extract_summary_metric(summary_text, "Tier 6-7 (external / secondhand)"),
-        "weighted_source_primary_ratio": extract_summary_percentage(summary_text, "Weighted-source primary ratio"),
+        "high_tier_sources": extract_summary_metric(
+            summary_text, "Tier 1-3 (high-quality primary)"
+        ),
+        "mid_tier_sources": extract_summary_metric(
+            summary_text, "Tier 4-5 (medium / short-form firsthand)"
+        ),
+        "low_tier_sources": extract_summary_metric(
+            summary_text, "Tier 6-7 (external / secondhand)"
+        ),
+        "weighted_source_primary_ratio": extract_summary_percentage(
+            summary_text, "Weighted-source primary ratio"
+        ),
         "research_audit_present": audit_path.exists(),
         "synthesis_review_present": synthesis_path.exists(),
         "validation_review_present": validation_path.exists(),
         "research_audit_pass": review_status_is_pass(audit_text),
         "validation_review_pass": review_status_is_pass(validation_text),
-        "known_answer_questions": len(re.findall(r"Question:\s*", audit_text + "\n" + validation_text)),
-        "edge_case_markers": len(re.findall(r"edge-case|edge case", audit_text + "\n" + validation_text, re.IGNORECASE)),
+        "known_answer_questions": len(
+            re.findall(r"Question:\s*", audit_text + "\n" + validation_text)
+        ),
+        "edge_case_markers": len(
+            re.findall(r"edge-case|edge case", audit_text + "\n" + validation_text, re.IGNORECASE)
+        ),
     }
 
 
@@ -173,34 +192,61 @@ def evaluate_skill_text(
     }
     strict = profile == "budget-unfriendly"
     checks = {
-        "mental_models": bullet_count >= 3 and bool(re.search(r"mental model|心智模型", text, re.IGNORECASE)),
+        "mental_models": bullet_count >= 3
+        and bool(re.search(r"mental model|心智模型", text, re.IGNORECASE)),
         "limitations": bool(re.search(r"limitations|boundary|局限|边界", text, re.IGNORECASE)),
-        "expression_dna": bool(re.search(r"expression DNA|表达 DNA|sentence rhythm|metaphor", text, re.IGNORECASE)),
-        "honest_boundaries": bool(re.search(r"honest boundar|诚实边界|what .* does not know", text, re.IGNORECASE)),
-        "internal_tension": bool(re.search(r"contradiction|tension|矛盾|张力", text, re.IGNORECASE)),
+        "expression_dna": bool(
+            re.search(r"expression DNA|表达 DNA|sentence rhythm|metaphor", text, re.IGNORECASE)
+        ),
+        "honest_boundaries": bool(
+            re.search(r"honest boundar|诚实边界|what .* does not know", text, re.IGNORECASE)
+        ),
+        "internal_tension": bool(
+            re.search(r"contradiction|tension|矛盾|张力", text, re.IGNORECASE)
+        ),
         "intellectual_genealogy": (
-            bool(re.search(r"intellectual genealogy|influenced by|智识谱系|influenced:", text, re.IGNORECASE))
-        ) if strict else True,
+            bool(
+                re.search(
+                    r"intellectual genealogy|influenced by|智识谱系|influenced:",
+                    text,
+                    re.IGNORECASE,
+                )
+            )
+        )
+        if strict
+        else True,
         "agentic_protocol": (
-            bool(re.search(r"agentic protocol|research dimensions|step 1.*classify|分析协议", text, re.IGNORECASE))
-        ) if strict else True,
+            bool(
+                re.search(
+                    r"agentic protocol|research dimensions|step 1.*classify|分析协议",
+                    text,
+                    re.IGNORECASE,
+                )
+            )
+        )
+        if strict
+        else True,
         "source_grounding": len(grounded_urls) >= (4 if strict else 2),
         "copyright_safety": is_copyright_safe_text(text) and metrics["long_quote_lines"] == 0,
         "source_hierarchy": (
-            metrics["weighted_source_primary_ratio"] >= 50
-            or metrics["high_tier_sources"] >= 3
-        ) if strict else True,
+            metrics["weighted_source_primary_ratio"] >= 50 or metrics["high_tier_sources"] >= 3
+        )
+        if strict
+        else True,
         "review_chain": (
             metrics["research_audit_present"]
             and metrics["synthesis_review_present"]
             and metrics["validation_review_present"]
             and metrics["research_audit_pass"]
             and metrics["validation_review_pass"]
-        ) if strict else True,
+        )
+        if strict
+        else True,
         "validation_depth": (
-            metrics["known_answer_questions"] >= 2
-            and metrics["edge_case_markers"] >= 1
-        ) if strict else True,
+            metrics["known_answer_questions"] >= 2 and metrics["edge_case_markers"] >= 1
+        )
+        if strict
+        else True,
         "research_depth": (
             metrics["files_scanned"] >= 6
             and metrics["unique_urls"] >= 8
@@ -209,7 +255,9 @@ def evaluate_skill_text(
             and metrics["contradiction_bullets"] >= 6
             and metrics["inference_bullets"] >= 6
             and metrics["track_coverage_count"] >= 6
-        ) if strict else True,
+        )
+        if strict
+        else True,
     }
     return {
         "passed": all(checks.values()),
@@ -235,7 +283,9 @@ def main() -> None:
 
     target = Path(args.path).expanduser()
     report = evaluate_skill_text(
-        target.read_text(encoding="utf-8") if target.is_file() else (target / "SKILL.md").read_text(encoding="utf-8"),
+        target.read_text(encoding="utf-8")
+        if target.is_file()
+        else (target / "SKILL.md").read_text(encoding="utf-8"),
         profile=args.profile,
         research_metrics=load_research_metrics(target),
     )

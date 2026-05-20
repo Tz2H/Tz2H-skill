@@ -17,7 +17,6 @@ import re
 from collections import Counter
 from pathlib import Path
 
-
 URL_PATTERN = re.compile(r"https?://[^\s)]+")
 TIMESTAMP_PATTERN = re.compile(r"\b\d{2}:\d{2}:\d{2}(?:[.,]\d{1,3})?\b")
 TRACK_PATTERN = re.compile(r"^(\d{2})[-_]")
@@ -32,7 +31,11 @@ FINDING_SECTIONS = {
     "patterns and repeated themes",
 }
 CONTRADICTION_SECTIONS = {"contradictions"}
-INFERENCE_SECTIONS = {"inferences", "inferences (clearly marked as inference, not fact)", "inferences (clearly marked)"}
+INFERENCE_SECTIONS = {
+    "inferences",
+    "inferences (clearly marked as inference, not fact)",
+    "inferences (clearly marked)",
+}
 GAP_SECTIONS = {"gaps and missing information", "gaps", "missing information"}
 METADATA_SECTIONS = {"source metadata", "collection metadata", "dimension coverage"}
 
@@ -162,7 +165,9 @@ def summarize_research_files(files: list[Path]) -> str:
         source_count += len(URL_PATTERN.findall(text))
         for url in URL_PATTERN.findall(text):
             urls.add(url)
-        primary_count += len(re.findall(r"\b(first-person|primary source|一手|原始)\b", text, re.IGNORECASE))
+        primary_count += len(
+            re.findall(r"\b(first-person|primary source|一手|原始)\b", text, re.IGNORECASE)
+        )
         long_quote_lines += count_potential_long_quote_lines(text)
         section_metrics = collect_structured_section_metrics(text)
         source_metadata_blocks += section_metrics["source_metadata_blocks"]
@@ -181,7 +186,9 @@ def summarize_research_files(files: list[Path]) -> str:
         findings = extract_key_findings(text)
         total_findings += len(findings)
         key_findings.extend(findings[:2])
-        primary_marker = bool(re.search(r'(first-person|primary source|一手|原始)', text, re.IGNORECASE))
+        primary_marker = bool(
+            re.search(r"(first-person|primary source|一手|原始)", text, re.IGNORECASE)
+        )
         file_rows.append(
             f"| {file_path.name} | {len(URL_PATTERN.findall(text))} | "
             f"{'yes' if primary_marker else 'no'} |"
@@ -209,11 +216,7 @@ def summarize_research_files(files: list[Path]) -> str:
         f"- Total bullet findings: {total_findings}",
         f"- Potential long quote lines: {long_quote_lines}",
         f"- Track coverage count: {len(set(track_ids))}",
-        (
-            f"- Track coverage: {', '.join(track_ids)}"
-            if track_ids
-            else "- Track coverage: none"
-        ),
+        (f"- Track coverage: {', '.join(track_ids)}" if track_ids else "- Track coverage: none"),
         (
             f"- Missing tracks: {', '.join(missing_tracks)}"
             if missing_tracks
@@ -227,8 +230,7 @@ def summarize_research_files(files: list[Path]) -> str:
         f"- Tier 6-7 (external / secondhand): {low_tier_sources}",
         f"- Total weighted sources: {total_weighted}",
         (
-            f"- Weighted-source primary ratio: "
-            f"{(high_tier_sources / total_weighted * 100):.0f}%"
+            f"- Weighted-source primary ratio: {(high_tier_sources / total_weighted * 100):.0f}%"
             if total_weighted
             else "- Weighted-source primary ratio: n/a (no weights annotated)"
         ),
