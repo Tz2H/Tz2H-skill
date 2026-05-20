@@ -100,7 +100,7 @@ allowed-tools: Read, Write, Edit, Bash
 
 根据 character family 选择对应 intake prompt：
 
-- `colleague` → `prompts/intake.md`
+- `colleague` → `prompts/colleague/intake.md`
 - `relationship` → `prompts/relationship/intake.md`
 - `celebrity` → `prompts/celebrity/intake.md`
 
@@ -381,13 +381,13 @@ python3 tools/feishu_mcp_client.py \
 
 | character | intake | persona analyzer | persona builder | merger | storage root |
 |-----------|--------|------------------|-----------------|--------|--------------|
-| `colleague` | `prompts/intake.md` | `prompts/persona_analyzer.md` | `prompts/persona_builder.md` | `prompts/merger.md` | `./skills/colleague/{slug}` |
+| `colleague` | `prompts/colleague/intake.md` | `prompts/colleague/persona_analyzer.md` | `prompts/colleague/persona_builder.md` | `prompts/colleague/merger.md` | `./skills/colleague/{slug}` |
 | `relationship` | `prompts/relationship/intake.md` | `prompts/relationship/persona_analyzer.md` | `prompts/relationship/persona_builder.md` | `prompts/relationship/merger.md` | `./skills/relationship/{slug}` |
 | `celebrity` | `prompts/celebrity/intake.md` | `prompts/celebrity/persona_analyzer.md` | `prompts/celebrity/persona_builder.md` | `prompts/celebrity/merger.md` | `./skills/celebrity/{slug}` |
 
-所有 family 共用：
-- Work analyzer：`prompts/work_analyzer.md`
-- Work builder：`prompts/work_builder.md`
+Work 模块当前使用 colleague 专门模板；其他 family 需要生成 work artifact 时复用这套工作能力模板：
+- Work analyzer：`prompts/colleague/work_analyzer.md`
+- Work builder：`prompts/colleague/work_builder.md`
 - Correction handler：`prompts/correction_handler.md`
 
 如果当前是 `celebrity`，必须先走 research 子流程，再进入分析。
@@ -530,7 +530,7 @@ python3 tools/feishu_mcp_client.py \
 完成 family 解析后，再按两条线分析：
 
 **线路 A（Work Skill）**：
-- 参考 `prompts/work_analyzer.md`
+- 参考 `prompts/colleague/work_analyzer.md`
 - 提取：负责系统、技术规范、工作流程、输出偏好、经验知识
 - celebrity 场景下，`work` 更偏方法论、判断框架、决策习惯，不要机械套成“工作职责”
 
@@ -549,11 +549,11 @@ python3 tools/feishu_mcp_client.py \
 
 ### Step 4：生成并预览
 
-使用 `prompts/work_builder.md` 生成 Work 内容。
+使用 `prompts/colleague/work_builder.md` 生成 Work 内容。
 使用当前 family 对应的 persona builder 生成 Persona 内容。
 
 具体映射：
-- `colleague` → `prompts/persona_builder.md`
+- `colleague` → `prompts/colleague/persona_builder.md`
 - `relationship` → `prompts/relationship/persona_builder.md`
 - `celebrity` → `prompts/celebrity/persona_builder.md`
 - `celebrity` + `budget-unfriendly` → `prompts/celebrity/budget_unfriendly/persona_builder.md`
@@ -825,7 +825,7 @@ Default to `budget-friendly`. Only switch to `budget-unfriendly` when the user e
 
 Choose the intake prompt by character family:
 
-- `colleague` → `prompts/intake.md`
+- `colleague` → `prompts/colleague/intake.md`
 - `relationship` → `prompts/relationship/intake.md`
 - `celebrity` → `prompts/celebrity/intake.md`
 
@@ -1106,13 +1106,13 @@ First resolve the execution matrix for the selected character family:
 
 | character | intake | persona analyzer | persona builder | merger | storage root |
 |-----------|--------|------------------|-----------------|--------|--------------|
-| `colleague` | `prompts/intake.md` | `prompts/persona_analyzer.md` | `prompts/persona_builder.md` | `prompts/merger.md` | `./skills/colleague/{slug}` |
+| `colleague` | `prompts/colleague/intake.md` | `prompts/colleague/persona_analyzer.md` | `prompts/colleague/persona_builder.md` | `prompts/colleague/merger.md` | `./skills/colleague/{slug}` |
 | `relationship` | `prompts/relationship/intake.md` | `prompts/relationship/persona_analyzer.md` | `prompts/relationship/persona_builder.md` | `prompts/relationship/merger.md` | `./skills/relationship/{slug}` |
 | `celebrity` | `prompts/celebrity/intake.md` | `prompts/celebrity/persona_analyzer.md` | `prompts/celebrity/persona_builder.md` | `prompts/celebrity/merger.md` | `./skills/celebrity/{slug}` |
 
-Shared across all families:
-- Work analyzer: `prompts/work_analyzer.md`
-- Work builder: `prompts/work_builder.md`
+The work module currently uses the colleague-specific templates; other families reuse them when a work artifact is needed:
+- Work analyzer: `prompts/colleague/work_analyzer.md`
+- Work builder: `prompts/colleague/work_builder.md`
 - Correction handler: `prompts/correction_handler.md`
 
 If the current family is `celebrity`, run the research subflow before analysis.
@@ -1256,7 +1256,7 @@ Shared rules for both celebrity profiles:
 Once the family is resolved, analyze along two tracks:
 
 **Track A (Work Skill)**:
-- Refer to `prompts/work_analyzer.md`
+- Refer to `prompts/colleague/work_analyzer.md`
 - Extract: responsible systems, technical standards, workflow, output preferences, experience
 - For `celebrity`, interpret `work` as methods, judgment frameworks, and decision patterns rather than literal job scope
 
@@ -1275,11 +1275,11 @@ Once the family is resolved, analyze along two tracks:
 
 ### Step 4: Generate and Preview
 
-Use `prompts/work_builder.md` to generate Work content.
+Use `prompts/colleague/work_builder.md` to generate Work content.
 Use the family-specific persona builder to generate Persona content.
 
 Mapping:
-- `colleague` → `prompts/persona_builder.md`
+- `colleague` → `prompts/colleague/persona_builder.md`
 - `relationship` → `prompts/relationship/persona_builder.md`
 - `celebrity` → `prompts/celebrity/persona_builder.md`
 - `celebrity` + `budget-unfriendly` → `prompts/celebrity/budget_unfriendly/persona_builder.md`
