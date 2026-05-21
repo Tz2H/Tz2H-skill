@@ -122,6 +122,7 @@ Codex 中没有固定 slash 入口，安装后它会把 `Tz2H-skill` 作为本�
 - 飞书 MCP 采集：`uv run python tools/feishu_mcp_client.py`
 - 钉钉自动采集：`uv run python tools/dingtalk_auto_collector.py`
 - Slack 自动采集：`uv run python tools/slack_auto_collector.py`
+- IMAP 邮件收集：`uv run python tools/collect_email_imap.py`
 - 邮件解析：`uv run python tools/email_parser.py`
 - 手动上传 PDF、图片、JSON、Markdown 或直接粘贴文本
 
