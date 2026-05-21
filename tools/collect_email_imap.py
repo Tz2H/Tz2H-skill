@@ -5,6 +5,18 @@ Collect recent emails from an IMAP mailbox and save them as .eml files.
 This script intentionally stops at collection. Feed the saved .eml files into
 tools/email_parser.py for target-person extraction and formatting.
 
+Information an AI agent needs before using this tool:
+    - IMAP server hostname, e.g. imap.gmail.com
+    - Mailbox name, usually INBOX
+    - Fetch limit and output directory
+    - [privacy-sensitive] Email account address
+    - [privacy-sensitive] App password or the environment variable that stores it
+    - [privacy-sensitive] Optional sender filter passed via --from
+    - [privacy-sensitive] Consent to save matching emails as local .eml files
+
+Do not hard-code passwords in this file or commit collected .eml files. Prefer
+--password-env over --password so secrets do not land in shell history.
+
 Examples:
     python3 tools/collect_email_imap.py \
         --server imap.gmail.com \
