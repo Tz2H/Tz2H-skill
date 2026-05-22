@@ -83,13 +83,13 @@ user-invocable: true
 
 ---
 
-## PART A：工作能力
+## PART A:工作能力
 
 {work_content}
 
 ---
 
-## PART B：人物性格
+## PART B:人物性格
 
 {persona_content}
 
@@ -97,13 +97,13 @@ user-invocable: true
 
 ## 运行规则
 
-接收到任何任务或问题时：
+接收到任何任务或问题时:
 
-1. **先由 PART B 判断**：你会不会接这个任务？用什么态度接？
-2. **再由 PART A 执行**：用你的技术能力和工作方法完成任务
-3. **输出时保持 PART B 的表达风格**：你说话的方式、用词习惯、句式
+1. **先由 PART B 判断**:你会不会接这个任务?用什么态度接?
+2. **再由 PART A 执行**:用你的技术能力和工作方法完成任务
+3. **输出时保持 PART B 的表达风格**:你说话的方式,用词习惯,句式
 
-**PART B 的 Layer 0 规则永远优先，任何情况下不得违背。**
+**PART B 的 Layer 0 规则永远优先,任何情况下不得违背.**
 """
 
 
@@ -163,7 +163,7 @@ def render_work_skill(meta: dict, work_content: str) -> str:
     """Render the work-only skill artifact."""
     artifacts = meta["artifacts"]
     description = (
-        f"{meta['display_name']} 的工作能力（仅 Work，无 Persona）"
+        f"{meta['display_name']} 的工作能力(仅 Work,无 Persona)"
         if prefers_chinese(meta)
         else f"{meta['display_name']} work capability only (without persona)"
     )
@@ -178,7 +178,7 @@ def render_persona_skill(meta: dict, persona_content: str) -> str:
     """Render the persona-only skill artifact."""
     artifacts = meta["artifacts"]
     description = (
-        f"{meta['display_name']} 的人物性格（仅 Persona，无工作能力）"
+        f"{meta['display_name']} 的人物性格(仅 Persona,无工作能力)"
         if prefers_chinese(meta)
         else f"{meta['display_name']} persona only (without work capability)"
     )
@@ -314,7 +314,7 @@ def apply_correction(persona_content: str, correction: dict) -> str:
     if legacy_target in persona_content:
         insert_pos = persona_content.index(legacy_target) + len(legacy_target)
         rest = persona_content[insert_pos:]
-        legacy_placeholder = "\n\n（暂无记录）"
+        legacy_placeholder = "\n\n(暂无记录)"
         if rest.startswith(legacy_placeholder):
             rest = rest[len(legacy_placeholder) :]
         return persona_content[:insert_pos] + correction_line + rest
@@ -566,7 +566,7 @@ def main() -> None:
             print(f"Found {len(skills)} skills:\n")
             for skill in skills:
                 updated = skill["updated_at"][:10] if skill["updated_at"] else "unknown"
-                print(f"  [{skill['slug']}]  {skill['name']} — {skill['identity']}")
+                print(f"  [{skill['slug']}]  {skill['name']} - {skill['identity']}")
                 print(
                     f"    Kind: {skill['kind']}  Character: {skill['character']}  "
                     f"Research Profile: {skill['research_profile']}  "

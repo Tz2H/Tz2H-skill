@@ -2,30 +2,30 @@
 """
 Slack 自动采集器
 
-输入同事的 Slack 姓名/用户名，自动：
-  1. 搜索 Slack 用户，获取 user_id
-  2. 找到与 Bot 共同的频道，拉取该用户发出的消息
-  3. 输出统一格式，直接进 Tz2H-skill 分析流程
+输入同事的 Slack 姓名/用户名,自动:
+  1. 搜索 Slack 用户,获取 user_id
+  2. 找到与 Bot 共同的频道,拉取该用户发出的消息
+  3. 输出统一格式,直接进 Tz2H-skill 分析流程
 
-前置：
-  python3 slack_auto_collector.py --setup   # 配置 Bot Token（一次性）
+前置:
+  python3 slack_auto_collector.py --setup   # 配置 Bot Token(一次性)
 
-用法：
+用法:
   python3 slack_auto_collector.py --name "张三" --output-dir ./knowledge/zhangsan
   python3 slack_auto_collector.py --name "john" --msg-limit 500 --channel-limit 30
 
-所需 Bot Token Scopes（OAuth & Permissions）：
+所需 Bot Token Scopes(OAuth & Permissions):
   channels:history      读取 public channel 消息
   channels:read         列出 public channels
   groups:history        读取 private channel 消息
   groups:read           列出 private channels
-  im:history            读取 DM 消息（可选）
-  im:read               列出 DM（可选）
-  mpim:history          读取群 DM 消息（可选）
-  mpim:read             列出群 DM（可选）
+  im:history            读取 DM 消息(可选)
+  im:read               列出 DM(可选)
+  mpim:history          读取群 DM 消息(可选)
+  mpim:read             列出群 DM(可选)
   users:read            搜索用户列表
 
-注意：
+注意:
   - 免费版 Workspace 仅保留最近 90 天消息
   - 需要 Workspace 管理员安装 Bot App
 """
@@ -47,7 +47,7 @@ try:
     from slack_sdk.errors import SlackApiError
 except ImportError:
     print(
-        "错误：请先安装 slack_sdk：uv sync --all-extras",
+        "错误:请先安装 slack_sdk:uv sync --all-extras",
         file=sys.stderr,
     )
     sys.exit(1)
@@ -56,7 +56,7 @@ except ImportError:
 
 CONFIG_PATH = Path.home() / ".Tz2H-skill" / "slack_config.json"
 
-# Slack 频道类型（采集范围）
+# Slack 频道类型(采集范围)
 CHANNEL_TYPES = "public_channel,private_channel,mpim,im"
 
 # 速率限制重试配置
@@ -73,7 +73,7 @@ DEFAULT_CHANNEL_LIMIT = 50  # 最多检查的频道数
 
 
 class SlackCollectorError(Exception):
-    """采集过程中的可预期错误，直接退出"""
+    """采集过程中的可预期错误,直接退出"""
 
 
 class SlackScopeError(SlackCollectorError):
@@ -90,14 +90,14 @@ class SlackAuthError(SlackCollectorError):
 def load_config() -> dict:
     if not CONFIG_PATH.exists():
         print(
-            "未找到配置，请先运行：python3 slack_auto_collector.py --setup",
+            "未找到配置,请先运行:python3 slack_auto_collector.py --setup",
             file=sys.stderr,
         )
         sys.exit(1)
     try:
         return json.loads(CONFIG_PATH.read_text())
     except json.JSONDecodeError:
-        print(f"配置文件损坏，请重新运行 --setup：{CONFIG_PATH}", file=sys.stderr)
+        print(f"配置文件损坏,请重新运行 --setup:{CONFIG_PATH}", file=sys.stderr)
         sys.exit(1)
 
 
@@ -108,31 +108,31 @@ def save_config(config: dict) -> None:
 
 def setup_config() -> None:
     print("=== Slack 自动采集配置 ===\n")
-    print("步骤 1：前往 https://api.slack.com/apps 创建新 App")
+    print("步骤 1:前往 https://api.slack.com/apps 创建新 App")
     print("        选择「From scratch」→ 填写 App Name → 选择目标 Workspace\n")
-    print("步骤 2：进入 OAuth & Permissions，在 Bot Token Scopes 添加：")
+    print("步骤 2:进入 OAuth & Permissions,在 Bot Token Scopes 添加:")
     print()
-    print("  消息类（必需）：")
+    print("  消息类(必需):")
     print("    channels:history     读取 public channel 历史消息")
     print("    groups:history       读取 private channel 历史消息")
     print("    mpim:history         读取群 DM 历史消息")
-    print("    im:history           读取 DM 历史消息（可选）")
+    print("    im:history           读取 DM 历史消息(可选)")
     print()
-    print("  频道信息（必需）：")
+    print("  频道信息(必需):")
     print("    channels:read        列出 public channels")
     print("    groups:read          列出 private channels")
     print("    mpim:read            列出群 DM")
-    print("    im:read              列出 DM（可选）")
+    print("    im:read              列出 DM(可选)")
     print()
-    print("  用户信息（必需）：")
+    print("  用户信息(必需):")
     print("    users:read           搜索用户列表")
     print()
-    print("步骤 3：Install to Workspace → 复制 Bot User OAuth Token（xoxb-...）")
-    print("步骤 4：将 Bot 加入目标频道（/invite @your-bot-name）\n")
+    print("步骤 3:Install to Workspace → 复制 Bot User OAuth Token(xoxb-...)")
+    print("步骤 4:将 Bot 加入目标频道(/invite @your-bot-name)\n")
 
     token = input("Bot User OAuth Token (xoxb-...): ").strip()
     if not token.startswith("xoxb-"):
-        print("警告：Token 格式不对，应以 xoxb- 开头", file=sys.stderr)
+        print("警告:Token 格式不对,应以 xoxb- 开头", file=sys.stderr)
 
     # 验证 token 是否有效
     print("\n验证 Token ...", end=" ", flush=True)
@@ -141,31 +141,31 @@ def setup_config() -> None:
         resp = client.auth_test()
         workspace = resp.get("team", "Unknown")
         bot_name = resp.get("user", "Unknown")
-        print(f"OK\n  Workspace：{workspace}，Bot：{bot_name}")
+        print(f"OK\n  Workspace:{workspace},Bot:{bot_name}")
     except SlackApiError as e:
         err = e.response.get("error", str(e))
-        print(f"失败\n  错误：{err}", file=sys.stderr)
+        print(f"失败\n  错误:{err}", file=sys.stderr)
         if err == "invalid_auth":
-            print("  Token 无效，请重新生成", file=sys.stderr)
+            print("  Token 无效,请重新生成", file=sys.stderr)
         sys.exit(1)
 
     config = {"bot_token": token}
     save_config(config)
     print(f"\n✅ 配置已保存到 {CONFIG_PATH}")
-    print("   请确认已将 Bot 加入目标频道，否则无法读取消息")
+    print("   请确认已将 Bot 加入目标频道,否则无法读取消息")
 
 
-# ─── Slack Client 封装（带速率限制重试）─────────────────────────────────────────
+# ─── Slack Client 封装(带速率限制重试)─────────────────────────────────────────
 
 
 class RateLimitedClient:
-    """封装 slack_sdk WebClient，自动处理 429 速率限制"""
+    """封装 slack_sdk WebClient,自动处理 429 速率限制"""
 
     def __init__(self, token: str) -> None:
         self._client = WebClient(token=token)
 
     def call(self, method: str, **kwargs: Any) -> dict[str, Any]:
-        """调用任意 Slack API，遇到 ratelimited 自动等待重试"""
+        """调用任意 Slack API,遇到 ratelimited 自动等待重试"""
         for attempt in range(1, MAX_RETRIES + 1):
             try:
                 fn = getattr(self._client, method)
@@ -174,44 +174,44 @@ class RateLimitedClient:
             except SlackApiError as e:
                 error = e.response.get("error", "")
 
-                # 速率限制：读取 Retry-After header 等待
+                # 速率限制:读取 Retry-After header 等待
                 if error == "ratelimited":
                     wait = float(e.response.headers.get("Retry-After", RETRY_BASE_WAIT * attempt))
                     wait = min(wait, RETRY_MAX_WAIT)
                     print(
-                        f"  [速率限制] 等待 {wait:.0f}s（第 {attempt}/{MAX_RETRIES} 次重试）...",
+                        f"  [速率限制] 等待 {wait:.0f}s(第 {attempt}/{MAX_RETRIES} 次重试)...",
                         file=sys.stderr,
                     )
                     time.sleep(wait)
                     continue
 
-                # 权限错误：直接抛出，不重试
+                # 权限错误:直接抛出,不重试
                 if error == "missing_scope":
                     missing = e.response.get("needed", "unknown")
                     raise SlackScopeError(
-                        f"Bot Token 缺少权限 scope：{missing}\n"
+                        f"Bot Token 缺少权限 scope:{missing}\n"
                         f"  请前往 https://api.slack.com/apps → OAuth & Permissions → Bot Token Scopes 添加"
                     ) from e
 
                 if error in ("invalid_auth", "token_revoked", "account_inactive"):
                     raise SlackAuthError(
-                        f"Token 认证失败（{error}），请重新运行 --setup 配置新 Token"
+                        f"Token 认证失败({error}),请重新运行 --setup 配置新 Token"
                     ) from e
 
-                # 频道无权限（Bot 未加入）：调用方处理
+                # 频道无权限(Bot 未加入):调用方处理
                 if error in ("not_in_channel", "channel_not_found"):
                     raise
 
-                # 其他错误：打印警告，返回空数据
-                print(f"  [API 警告] {method} 返回错误：{error}", file=sys.stderr)
+                # 其他错误:打印警告,返回空数据
+                print(f"  [API 警告] {method} 返回错误:{error}", file=sys.stderr)
                 return {}
 
         # 重试耗尽
-        print(f"  [错误] {method} 多次重试后仍失败，跳过", file=sys.stderr)
+        print(f"  [错误] {method} 多次重试后仍失败,跳过", file=sys.stderr)
         return {}
 
     def paginate(self, method: str, result_key: str, **kwargs: Any) -> list[Any]:
-        """自动翻页，返回所有结果的合并列表"""
+        """自动翻页,返回所有结果的合并列表"""
         items: list = []
         cursor = None
 
@@ -239,10 +239,10 @@ class RateLimitedClient:
 
 def find_user(name: str, client: RateLimitedClient) -> Optional[dict]:
     """
-    通过姓名（real_name / display_name / name）搜索 Slack 用户。
-    支持中文姓名、英文用户名、模糊匹配。
+    通过姓名(real_name / display_name / name)搜索 Slack 用户.
+    支持中文姓名,英文用户名,模糊匹配.
     """
-    print(f"  搜索用户：{name} ...", file=sys.stderr)
+    print(f"  搜索用户:{name} ...", file=sys.stderr)
 
     try:
         members = client.paginate("users_list", "members", limit=200)
@@ -278,9 +278,9 @@ def find_user(name: str, client: RateLimitedClient) -> Optional[dict]:
     candidates = [(s, m) for s, m in scored if s > 0]
 
     if not candidates:
-        print(f"  未找到用户：{name}", file=sys.stderr)
+        print(f"  未找到用户:{name}", file=sys.stderr)
         print(
-            "  提示：请确认姓名拼写，或尝试用英文用户名（如 john.doe）",
+            "  提示:请确认姓名拼写,或尝试用英文用户名(如 john.doe)",
             file=sys.stderr,
         )
         return None
@@ -292,17 +292,17 @@ def find_user(name: str, client: RateLimitedClient) -> Optional[dict]:
         _print_user(user)
         return user
 
-    # 多个候选，让用户选择
-    print(f"\n  找到 {len(candidates)} 个匹配，请选择：")
+    # 多个候选,让用户选择
+    print(f"\n  找到 {len(candidates)} 个匹配,请选择:")
     for i, (_, m) in enumerate(candidates[:10]):
         profile = m.get("profile", {})
         real_name = profile.get("real_name", "")
         display_name = profile.get("display_name", "")
         username = m.get("name", "")
         title = profile.get("title", "")
-        print(f"    [{i + 1}] {real_name}（@{display_name or username}）  {title}")
+        print(f"    [{i + 1}] {real_name}(@{display_name or username})  {title}")
 
-    choice = input("\n  选择编号（默认 1）：").strip() or "1"
+    choice = input("\n  选择编号(默认 1):").strip() or "1"
     try:
         idx = int(choice) - 1
         _, user = candidates[idx]
@@ -319,7 +319,7 @@ def _print_user(user: dict) -> None:
     display_name = profile.get("display_name", "")
     title = profile.get("title", "")
     print(
-        f"  找到用户：{real_name}（@{display_name}）  {title}",
+        f"  找到用户:{real_name}(@{display_name})  {title}",
         file=sys.stderr,
     )
 
@@ -333,8 +333,8 @@ def get_channels_with_user(
     client: RateLimitedClient,
 ) -> list:
     """
-    返回 Bot 已加入、且目标用户也在其中的所有频道。
-    策略：先列出 Bot 的所有频道，再逐个检查成员列表。
+    返回 Bot 已加入,且目标用户也在其中的所有频道.
+    策略:先列出 Bot 的所有频道,再逐个检查成员列表.
     """
     print("  获取频道列表 ...", file=sys.stderr)
 
@@ -352,11 +352,11 @@ def get_channels_with_user(
 
     # 只保留 Bot 是成员的频道
     bot_channels = [c for c in channels if c.get("is_member")]
-    print(f"  Bot 已加入 {len(bot_channels)} 个频道，检查成员 ...", file=sys.stderr)
+    print(f"  Bot 已加入 {len(bot_channels)} 个频道,检查成员 ...", file=sys.stderr)
 
     if len(bot_channels) > channel_limit:
         print(
-            f"  频道数超过上限 {channel_limit}，只检查前 {channel_limit} 个",
+            f"  频道数超过上限 {channel_limit},只检查前 {channel_limit} 个",
             file=sys.stderr,
         )
         bot_channels = bot_channels[:channel_limit]
@@ -377,7 +377,7 @@ def get_channels_with_user(
             err = e.response.get("error", "")
             if err in ("not_in_channel", "channel_not_found"):
                 continue
-            print(f"    跳过频道 {ch_name}（{err}）", file=sys.stderr)
+            print(f"    跳过频道 {ch_name}({err})", file=sys.stderr)
             continue
         except SlackScopeError as e:
             print(f"  ❌ {e}", file=sys.stderr)
@@ -401,8 +401,8 @@ def fetch_messages_from_channel(
     client: RateLimitedClient,
 ) -> list:
     """
-    从指定频道拉取目标用户发出的消息。
-    按时间倒序翻页，直到达到 limit 或无更多数据。
+    从指定频道拉取目标用户发出的消息.
+    按时间倒序翻页,直到达到 limit 或无更多数据.
     """
     messages = []
     cursor = None
@@ -420,11 +420,11 @@ def fetch_messages_from_channel(
             err = e.response.get("error", "")
             if err == "not_in_channel":
                 print(
-                    f"    Bot 不在频道 #{channel_name}，跳过（请 /invite @bot）",
+                    f"    Bot 不在频道 #{channel_name},跳过(请 /invite @bot)",
                     file=sys.stderr,
                 )
             else:
-                print(f"    拉取 #{channel_name} 失败（{err}）", file=sys.stderr)
+                print(f"    拉取 #{channel_name} 失败({err})", file=sys.stderr)
             break
 
         if not data:
@@ -434,7 +434,7 @@ def fetch_messages_from_channel(
         raw_msgs = data.get("messages", [])
 
         for msg in raw_msgs:
-            # 只要目标用户发的、非系统消息
+            # 只要目标用户发的,非系统消息
             if msg.get("user") != user_id:
                 continue
             if msg.get("subtype"):  # join/leave/bot_message 等系统类型
@@ -451,7 +451,7 @@ def fetch_messages_from_channel(
             ts_raw = msg.get("ts", "")
             time_str = _format_ts(ts_raw)
 
-            # 包含 thread_reply_count 说明是话题发起消息，权重更高
+            # 包含 thread_reply_count 说明是话题发起消息,权重更高
             is_thread_starter = bool(msg.get("reply_count", 0))
 
             messages.append(
@@ -472,7 +472,7 @@ def fetch_messages_from_channel(
 
 
 def _is_noise(text: str) -> bool:
-    """判断是否是无意义消息（纯表情、@mention、URL）"""
+    """判断是否是无意义消息(纯表情,@mention,URL)"""
     import re
 
     # 去掉 Slack 特殊格式后几乎为空
@@ -482,7 +482,7 @@ def _is_noise(text: str) -> bool:
 
 
 def _format_ts(ts: str) -> str:
-    """将 Slack timestamp（Unix float string）转为可读时间"""
+    """将 Slack timestamp(Unix float string)转为可读时间"""
     try:
         return datetime.fromtimestamp(float(ts)).strftime("%Y-%m-%d %H:%M")
     except (ValueError, OSError):
@@ -498,15 +498,15 @@ def collect_messages(
     msg_limit: int,
     client: RateLimitedClient,
 ) -> str:
-    """从所有频道采集目标用户消息，返回格式化文本"""
+    """从所有频道采集目标用户消息,返回格式化文本"""
     user_id = user["id"]
     name = user.get("profile", {}).get("real_name") or user.get("name", user_id)
 
     if not channels:
         return (
             f"# 消息记录\n\n"
-            f"未找到与 {name} 共同的频道。\n"
-            f"请确认 Bot 已被添加到相关频道（/invite @bot）\n"
+            f"未找到与 {name} 共同的频道.\n"
+            f"请确认 Bot 已被添加到相关频道(/invite @bot)\n"
         )
 
     all_messages: list = []
@@ -529,17 +529,17 @@ def collect_messages(
     channel_names = ", ".join(f"#{c.get('name', c.get('id', ''))}" for c in channels)
 
     lines = [
-        "# Slack 消息记录（自动采集）",
-        f"目标：{name}",
-        f"来源频道：{channel_names}",
+        "# Slack 消息记录(自动采集)",
+        f"目标:{name}",
+        f"来源频道:{channel_names}",
         f"共 {len(all_messages)} 条消息",
-        f"  话题发起消息：{len(thread_msgs)} 条",
-        f"  长消息（>50字）：{len(long_msgs)} 条",
-        f"  短消息：{len(short_msgs)} 条",
+        f"  话题发起消息:{len(thread_msgs)} 条",
+        f"  长消息(>50字):{len(long_msgs)} 条",
+        f"  短消息:{len(short_msgs)} 条",
         "",
         "---",
         "",
-        "## 话题发起消息（权重最高：观点/决策/技术分享）",
+        "## 话题发起消息(权重最高:观点/决策/技术分享)",
         "",
     ]
     for m in thread_msgs:
@@ -549,14 +549,14 @@ def collect_messages(
     lines += [
         "---",
         "",
-        "## 长消息（观点/方案/讨论类）",
+        "## 长消息(观点/方案/讨论类)",
         "",
     ]
     for m in long_msgs:
         lines.append(f"[{m['time']}][#{m['channel']}] {m['content']}")
         lines.append("")
 
-    lines += ["---", "", "## 日常消息（风格参考）", ""]
+    lines += ["---", "", "## 日常消息(风格参考)", ""]
     for m in short_msgs[:300]:
         lines.append(f"[{m['time']}] {m['content']}")
 
@@ -570,11 +570,11 @@ def collect_all(
     channel_limit: int,
     config: dict,
 ) -> dict:
-    """采集某同事的所有 Slack 数据，输出到 output_dir"""
+    """采集某同事的所有 Slack 数据,输出到 output_dir"""
     output_dir.mkdir(parents=True, exist_ok=True)
     results: dict = {}
 
-    print(f"\n🔍 开始采集：{name}\n", file=sys.stderr)
+    print(f"\n🔍 开始采集:{name}\n", file=sys.stderr)
 
     # 初始化 Client
     try:
@@ -582,9 +582,9 @@ def collect_all(
         # 快速验证 token 有效性
         auth_data = client.call("auth_test")
         if not auth_data:
-            raise SlackAuthError("auth_test 无响应，请检查 Token")
+            raise SlackAuthError("auth_test 无响应,请检查 Token")
         print(
-            f"  Workspace：{auth_data.get('team')}，Bot：{auth_data.get('user')}",
+            f"  Workspace:{auth_data.get('team')},Bot:{auth_data.get('user')}",
             file=sys.stderr,
         )
     except SlackAuthError as e:
@@ -594,7 +594,7 @@ def collect_all(
     # Step 1: 搜索用户
     user = find_user(name, client)
     if not user:
-        print(f"❌ 未找到用户 {name}，请检查姓名/用户名是否正确", file=sys.stderr)
+        print(f"❌ 未找到用户 {name},请检查姓名/用户名是否正确", file=sys.stderr)
         sys.exit(1)
 
     user_id = user["id"]
@@ -602,12 +602,12 @@ def collect_all(
     real_name = profile.get("real_name") or user.get("name", user_id)
 
     # Step 2: 找共同频道
-    print(f"\n📡 查找与 {real_name} 共同的频道（上限 {channel_limit} 个）...", file=sys.stderr)
+    print(f"\n📡 查找与 {real_name} 共同的频道(上限 {channel_limit} 个)...", file=sys.stderr)
     channels = get_channels_with_user(user_id, channel_limit, client)
-    print(f"  共同频道：{len(channels)} 个", file=sys.stderr)
+    print(f"  共同频道:{len(channels)} 个", file=sys.stderr)
 
     # Step 3: 采集消息
-    print(f"\n📨 采集消息记录（上限 {msg_limit} 条）...", file=sys.stderr)
+    print(f"\n📨 采集消息记录(上限 {msg_limit} 条)...", file=sys.stderr)
     try:
         msg_content = collect_messages(user, channels, msg_limit, client)
         msg_path = output_dir / "messages.txt"
@@ -618,7 +618,7 @@ def collect_all(
         print(f"  ❌ {e}", file=sys.stderr)
         sys.exit(1)
     except Exception as e:
-        print(f"  ⚠️  消息采集失败：{e}", file=sys.stderr)
+        print(f"  ⚠️  消息采集失败:{e}", file=sys.stderr)
 
     # 写摘要
     summary = {
@@ -635,7 +635,7 @@ def collect_all(
     summary_path.write_text(json.dumps(summary, ensure_ascii=False, indent=2))
     print(f"  ✅ 采集摘要 → {summary_path}", file=sys.stderr)
 
-    print(f"\n✅ 采集完成，输出目录：{output_dir}", file=sys.stderr)
+    print(f"\n✅ 采集完成,输出目录:{output_dir}", file=sys.stderr)
     return results
 
 
@@ -647,7 +647,7 @@ def main() -> None:
         description="Slack 数据自动采集器",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
-示例：
+示例:
   # 首次配置
   python3 slack_auto_collector.py --setup
 
@@ -656,24 +656,24 @@ def main() -> None:
   python3 slack_auto_collector.py --name "john.doe" --output-dir ./knowledge/john --msg-limit 500
         """,
     )
-    parser.add_argument("--setup", action="store_true", help="初始化配置（Bot Token）")
+    parser.add_argument("--setup", action="store_true", help="初始化配置(Bot Token)")
     parser.add_argument("--name", help="同事姓名或 Slack 用户名")
     parser.add_argument(
         "--output-dir",
         default=None,
-        help="输出目录（默认 ./knowledge/{name}）",
+        help="输出目录(默认 ./knowledge/{name})",
     )
     parser.add_argument(
         "--msg-limit",
         type=int,
         default=DEFAULT_MSG_LIMIT,
-        help=f"最多采集消息条数（默认 {DEFAULT_MSG_LIMIT}）",
+        help=f"最多采集消息条数(默认 {DEFAULT_MSG_LIMIT})",
     )
     parser.add_argument(
         "--channel-limit",
         type=int,
         default=DEFAULT_CHANNEL_LIMIT,
-        help=f"最多检查频道数（默认 {DEFAULT_CHANNEL_LIMIT}）",
+        help=f"最多检查频道数(默认 {DEFAULT_CHANNEL_LIMIT})",
     )
 
     args = parser.parse_args()
@@ -698,7 +698,7 @@ def main() -> None:
             config=config,
         )
     except SlackCollectorError as e:
-        print(f"\n❌ 采集失败：{e}", file=sys.stderr)
+        print(f"\n❌ 采集失败:{e}", file=sys.stderr)
         sys.exit(1)
     except KeyboardInterrupt:
         print("\n\n已取消", file=sys.stderr)

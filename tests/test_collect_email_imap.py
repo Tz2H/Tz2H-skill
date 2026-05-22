@@ -9,6 +9,7 @@ from tools.collect_email_imap import (
     decode_mime_str,
     resolve_password,
     safe_filename,
+    validate_privacy_approval,
 )
 
 
@@ -38,6 +39,14 @@ class CollectEmailImapTest(unittest.TestCase):
     def test_resolve_password_requires_a_source(self) -> None:
         with self.assertRaises(RuntimeError):
             resolve_password(None, None)
+
+    def test_validate_privacy_approval_allows_local_model(self) -> None:
+        validate_privacy_approval("local", False)
+
+    def test_validate_privacy_approval_requires_consent_for_online_model(self) -> None:
+        with self.assertRaises(RuntimeError):
+            validate_privacy_approval("online", False)
+        validate_privacy_approval("online", True)
 
 
 if __name__ == "__main__":

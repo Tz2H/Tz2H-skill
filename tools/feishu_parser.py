@@ -2,11 +2,11 @@
 """
 飞书消息导出 JSON 解析器
 
-支持的导出格式：
-1. 飞书官方导出（群聊记录）：通常为 JSON 数组，每条消息包含 sender、content、timestamp
-2. 手动整理的 TXT 格式（每行：时间 发送人：内容）
+支持的导出格式:
+1. 飞书官方导出(群聊记录):通常为 JSON 数组,每条消息包含 sender,content,timestamp
+2. 手动整理的 TXT 格式(每行:时间 发送人:内容)
 
-用法：
+用法:
     python feishu_parser.py --file messages.json --target "张三" --output output.txt
     python feishu_parser.py --file messages.txt --target "张三" --output output.txt
 """
@@ -55,11 +55,11 @@ def parse_feishu_json(file_path: str, target_name: str) -> list[dict]:
                 c.get("text", "") if isinstance(c, dict) else str(c) for c in content
             )
 
-        # 过滤：只保留目标人发送的消息
+        # 过滤:只保留目标人发送的消息
         if target_name and target_name not in str(sender):
             continue
 
-        # 过滤：跳过系统消息、表情包、撤回消息
+        # 过滤:跳过系统消息,表情包,撤回消息
         if not content or content.strip() in ["[图片]", "[文件]", "[撤回了一条消息]", "[语音]"]:
             continue
 
@@ -75,15 +75,15 @@ def parse_feishu_json(file_path: str, target_name: str) -> list[dict]:
 
 
 def parse_feishu_txt(file_path: str, target_name: str) -> list[dict]:
-    """解析手动整理的 TXT 格式消息（格式：时间 发送人：内容）"""
+    """解析手动整理的 TXT 格式消息(格式:时间 发送人:内容)"""
     messages = []
 
     with open(file_path, "r", encoding="utf-8") as f:
         lines = f.readlines()
 
-    # 匹配格式：2024-01-01 10:00 张三：消息内容
+    # 匹配格式:2024-01-01 10:00 张三:消息内容
     pattern = re.compile(
-        r"^(?P<time>\d{4}[-/]\d{1,2}[-/]\d{1,2}[\s\d:]*)\s+(?P<sender>.+?)[:：]\s*(?P<content>.+)$"
+        r"^(?P<time>\d{4}[-/]\d{1,2}[-/]\d{1,2}[\s\d:]*)\s+(?P<sender>.+?)[::]\s*(?P<content>.+)$"
     )
 
     for line in lines:
@@ -110,7 +110,7 @@ def parse_feishu_txt(file_path: str, target_name: str) -> list[dict]:
                 }
             )
         else:
-            # 没有匹配格式，检查是否包含目标人名
+            # 没有匹配格式,检查是否包含目标人名
             if target_name and target_name in line:
                 messages.append(
                     {
@@ -125,10 +125,10 @@ def parse_feishu_txt(file_path: str, target_name: str) -> list[dict]:
 
 def extract_key_content(messages: list[dict]) -> dict:
     """
-    对消息进行分类提取，区分：
-    - 长消息（>50字）：可能包含观点、方案、技术判断
-    - 决策类回复：包含"同意""不行""觉得""建议"等关键词
-    - 日常沟通：其他消息
+    对消息进行分类提取,区分:
+    - 长消息(>50字):可能包含观点,方案,技术判断
+    - 决策类回复:包含"同意""不行""觉得""建议"等关键词
+    - 日常沟通:其他消息
     """
     long_messages = []
     decision_messages = []
@@ -177,15 +177,15 @@ def extract_key_content(messages: list[dict]) -> dict:
 
 
 def format_output(target_name: str, extracted: dict) -> str:
-    """格式化输出，供 AI 分析使用"""
+    """格式化输出,供 AI 分析使用"""
     lines = [
         "# 飞书消息提取结果",
-        f"目标人物：{target_name}",
-        f"总消息数：{extracted['total_count']}",
+        f"目标人物:{target_name}",
+        f"总消息数:{extracted['total_count']}",
         "",
         "---",
         "",
-        "## 长消息（观点/方案类，权重最高）",
+        "## 长消息(观点/方案类,权重最高)",
         "",
     ]
 
@@ -209,11 +209,11 @@ def format_output(target_name: str, extracted: dict) -> str:
     lines += [
         "---",
         "",
-        "## 日常沟通（风格参考）",
+        "## 日常沟通(风格参考)",
         "",
     ]
 
-    # 日常消息只取前 100 条，避免太长
+    # 日常消息只取前 100 条,避免太长
     for msg in extracted["daily_messages"][:100]:
         ts = f"[{msg['timestamp']}] " if msg["timestamp"] else ""
         lines.append(f"{ts}{msg['content']}")
@@ -223,15 +223,15 @@ def format_output(target_name: str, extracted: dict) -> str:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="解析飞书消息导出文件")
-    parser.add_argument("--file", required=True, help="输入文件路径（.json 或 .txt）")
-    parser.add_argument("--target", required=True, help="目标人物姓名（只提取此人发出的消息）")
-    parser.add_argument("--output", default=None, help="输出文件路径（默认打印到 stdout）")
+    parser.add_argument("--file", required=True, help="输入文件路径(.json 或 .txt)")
+    parser.add_argument("--target", required=True, help="目标人物姓名(只提取此人发出的消息)")
+    parser.add_argument("--output", default=None, help="输出文件路径(默认打印到 stdout)")
 
     args = parser.parse_args()
 
     file_path = Path(args.file)
     if not file_path.exists():
-        print(f"错误：文件不存在 {file_path}", file=sys.stderr)
+        print(f"错误:文件不存在 {file_path}", file=sys.stderr)
         sys.exit(1)
 
     # 根据文件类型选择解析器
@@ -241,8 +241,8 @@ def main() -> None:
         messages = parse_feishu_txt(str(file_path), args.target)
 
     if not messages:
-        print(f"警告：未找到 '{args.target}' 发出的消息", file=sys.stderr)
-        print("提示：请检查目标姓名是否与文件中的发送人名称一致", file=sys.stderr)
+        print(f"警告:未找到 '{args.target}' 发出的消息", file=sys.stderr)
+        print("提示:请检查目标姓名是否与文件中的发送人名称一致", file=sys.stderr)
 
     extracted = extract_key_content(messages)
     output = format_output(args.target, extracted)
@@ -250,7 +250,7 @@ def main() -> None:
     if args.output:
         with open(args.output, "w", encoding="utf-8") as f:
             f.write(output)
-        print(f"已输出到 {args.output}，共 {len(messages)} 条消息")
+        print(f"已输出到 {args.output},共 {len(messages)} 条消息")
     else:
         print(output)
 

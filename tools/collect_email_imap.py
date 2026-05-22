@@ -14,6 +14,13 @@ Information an AI agent needs before using this tool:
     - [privacy-sensitive] Optional sender filter passed via --from
     - [privacy-sensitive] Consent to save matching emails as local .eml files
 
+Model-context approval rule:
+    - Local model: pass --model-context local after the user provides the
+      privacy-sensitive values.
+    - Online model: the platform must show a privacy warning and obtain user
+      consent, then pass --privacy-approved.
+    - Default is --model-context online, so ambiguous automated use fails closed.
+
 Do not hard-code passwords in this file or commit collected .eml files. Prefer
 --password-env over --password so secrets do not land in shell history.
 
@@ -22,6 +29,7 @@ Examples:
         --server imap.gmail.com \
         --email your_email@gmail.com \
         --password-env GMAIL_APP_PASSWORD \
+        --model-context local \
         --limit 50 \
         --output collected_emails
 
@@ -104,6 +112,17 @@ def resolve_password(password: str | None, password_env: str | None) -> str:
     raise RuntimeError("请通过 --password 或 --password-env 提供邮箱密码/应用专用密码")
 
 
+def validate_privacy_approval(model_context: str, privacy_approved: bool) -> None:
+    """Enforce model-context-specific approval before touching private email."""
+    if model_context == "online" and not privacy_approved:
+        raise RuntimeError(
+            "online model 使用本工具前必须由平台展示隐私信息提醒并获得用户同意;"
+            "确认后请追加 --privacy-approved"
+        )
+    if model_context != "local" and model_context != "online":
+        raise RuntimeError("--model-context 只能是 local 或 online")
+
+
 def collect_emails(
     server: str,
     email_account: str,
@@ -127,7 +146,7 @@ def collect_emails(
     try:
         status, _ = mail.select(mailbox, readonly=True)
         if status != "OK":
-            raise RuntimeError(f"无法打开邮箱目录：{mailbox}")
+            raise RuntimeError(f"无法打开邮箱目录:{mailbox}")
 
         search_criteria = build_search_criteria(from_address)
         status, data = mail.search(None, *search_criteria)
@@ -146,12 +165,12 @@ def collect_emails(
             email_id = email_id_bytes.decode("ascii", errors="replace")
             status, msg_data = mail.fetch(email_id_bytes, "(BODY.PEEK[])")
             if status != "OK":
-                print(f"跳过邮件 ID {email_id}：获取失败", file=sys.stderr)
+                print(f"跳过邮件 ID {email_id}:获取失败", file=sys.stderr)
                 continue
 
             raw_email = extract_raw_message(msg_data)
             if raw_email is None:
-                print(f"跳过邮件 ID {email_id}：响应中没有邮件正文", file=sys.stderr)
+                print(f"跳过邮件 ID {email_id}:响应中没有邮件正文", file=sys.stderr)
                 continue
 
             msg = email.message_from_bytes(raw_email)
@@ -163,19 +182,19 @@ def collect_emails(
             file_path = output_path / filename
 
             if file_path.exists():
-                print(f"已存在，跳过：{filename}")
+                print(f"已存在,跳过:{filename}")
                 continue
 
             with open(file_path, "wb") as f:
                 f.write(raw_email)
 
             saved_count += 1
-            print(f"已保存：{filename}")
+            print(f"已保存:{filename}")
             print(f"  From: {from_field}")
             print(f"  Date: {date}")
             print()
 
-        print(f"完成：新增保存 {saved_count} 封邮件")
+        print(f"完成:新增保存 {saved_count} 封邮件")
         return saved_count
 
     finally:
@@ -184,25 +203,37 @@ def collect_emails(
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="通过 IMAP 收集邮件并保存为 .eml 文件，后续交给 email_parser.py 处理"
+        description="通过 IMAP 收集邮件并保存为 .eml 文件,后续交给 email_parser.py 处理"
     )
-    parser.add_argument("--server", required=True, help="IMAP 服务器，例如 imap.gmail.com")
-    parser.add_argument("--port", type=int, default=993, help="IMAP SSL 端口，默认 993")
+    parser.add_argument("--server", required=True, help="IMAP 服务器,例如 imap.gmail.com")
+    parser.add_argument("--port", type=int, default=993, help="IMAP SSL 端口,默认 993")
     parser.add_argument("--email", required=True, help="邮箱账号")
     parser.add_argument("--password", default=None, help="邮箱密码或应用专用密码")
     parser.add_argument(
         "--password-env",
         default=None,
-        help="从指定环境变量读取密码，例如 GMAIL_APP_PASSWORD",
+        help="从指定环境变量读取密码,例如 GMAIL_APP_PASSWORD",
     )
-    parser.add_argument("--mailbox", default="INBOX", help="邮箱目录，默认 INBOX")
+    parser.add_argument("--mailbox", default="INBOX", help="邮箱目录,默认 INBOX")
     parser.add_argument("--from", dest="from_address", default=None, help="只收集指定发件人的邮件")
     parser.add_argument("--limit", type=int, default=50, help="拉取最近多少封匹配邮件")
     parser.add_argument("--output", default="collected_emails", help="输出目录")
+    parser.add_argument(
+        "--model-context",
+        choices=("local", "online"),
+        default="online",
+        help="调用模型环境:local 可直接使用;online 需要 --privacy-approved,默认 online",
+    )
+    parser.add_argument(
+        "--privacy-approved",
+        action="store_true",
+        help="确认在线模型平台已展示隐私提醒并获得用户同意",
+    )
 
     args = parser.parse_args()
 
     try:
+        validate_privacy_approval(args.model_context, args.privacy_approved)
         password = resolve_password(args.password, args.password_env)
         collect_emails(
             server=args.server,
@@ -215,7 +246,7 @@ def main() -> None:
             from_address=args.from_address,
         )
     except Exception as exc:
-        print(f"错误：{exc}", file=sys.stderr)
+        print(f"错误:{exc}", file=sys.stderr)
         sys.exit(1)
 
 

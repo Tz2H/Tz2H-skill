@@ -141,10 +141,10 @@ class SkillWriterTest(unittest.TestCase):
             work_skill = (skill_dir / "work_skill.md").read_text(encoding="utf-8")
             persona_skill = (skill_dir / "persona_skill.md").read_text(encoding="utf-8")
 
-            self.assertIn("## PART A：工作能力", combined_skill)
+            self.assertIn("## PART A:工作能力", combined_skill)
             self.assertIn("运行规则", combined_skill)
-            self.assertIn("仅 Work，无 Persona", work_skill)
-            self.assertIn("仅 Persona，无工作能力", persona_skill)
+            self.assertIn("仅 Work,无 Persona", work_skill)
+            self.assertIn("仅 Persona,无工作能力", persona_skill)
 
     def test_create_celebrity_adds_research_dirs_and_toolchain(self) -> None:
         with tempfile.TemporaryDirectory() as tmp_dir:
@@ -236,7 +236,7 @@ class SkillWriterTest(unittest.TestCase):
                 "name": "徐志胜",
                 "display_name": "徐志胜",
                 "classification": {"language": "zh-CN"},
-                "profile": "中国脱口秀演员，以自嘲式观察喜剧著称。",
+                "profile": "中国脱口秀演员,以自嘲式观察喜剧著称.",
             }
 
             skill_dir = skill_writer.create_skill(
@@ -248,7 +248,7 @@ class SkillWriterTest(unittest.TestCase):
             )
 
             saved_meta = json.loads((skill_dir / "meta.json").read_text(encoding="utf-8"))
-            self.assertEqual(saved_meta["profile"], "中国脱口秀演员，以自嘲式观察喜剧著称。")
+            self.assertEqual(saved_meta["profile"], "中国脱口秀演员,以自嘲式观察喜剧著称.")
             self.assertIn("中国脱口秀演员", saved_meta["summary"])
 
     def test_update_regenerates_manifest_and_archives_artifacts(self) -> None:
@@ -307,7 +307,7 @@ class SkillWriterTest(unittest.TestCase):
                         {
                             "scene": "铺陈处境时",
                             "wrong": "一上来就下判断",
-                            "correct": "先把处境讲得很普通，再轻轻点一下",
+                            "correct": "先把处境讲得很普通,再轻轻点一下",
                         },
                         {
                             "scene": "表达立场时",

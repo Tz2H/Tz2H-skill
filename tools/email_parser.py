@@ -2,12 +2,12 @@
 """
 邮件解析器
 
-支持格式：
-1. .eml 文件（标准邮件格式）
-2. .txt 文件（纯文本邮件记录）
-3. .mbox 文件（多封邮件合集）
+支持格式:
+1. .eml 文件(标准邮件格式)
+2. .txt 文件(纯文本邮件记录)
+3. .mbox 文件(多封邮件合集)
 
-用法：
+用法:
     python email_parser.py --file emails.eml --target "zhangsan@company.com" --output output.txt
     python email_parser.py --file inbox.mbox --target "张三" --output output.txt
 """
@@ -109,7 +109,7 @@ def extract_email_body(msg: Message) -> str:
             except Exception:
                 body = payload.decode("utf-8", errors="replace")
 
-    # 清理引用内容（Re: 时的原文引用）
+    # 清理引用内容(Re: 时的原文引用)
     body = re.sub(r"\n>.*", "", body)
     body = re.sub(r"\n-{3,}.*?原始邮件.*?\n", "\n", body, flags=re.DOTALL)
     body = re.sub(r"\n_{3,}\n.*", "", body, flags=re.DOTALL)
@@ -151,7 +151,7 @@ def parse_eml_file(file_path: str, target: str) -> list[dict]:
 
 
 def parse_mbox_file(file_path: str, target: str) -> list[dict]:
-    """解析 .mbox 文件（多封邮件合集）"""
+    """解析 .mbox 文件(多封邮件合集)"""
     results = []
     mbox = mailbox.mbox(file_path)
 
@@ -182,7 +182,7 @@ def parse_mbox_file(file_path: str, target: str) -> list[dict]:
 def parse_txt_file(file_path: str, target: str) -> list[dict]:
     """
     解析纯文本格式的邮件记录
-    支持简单的分隔格式：
+    支持简单的分隔格式:
     From: xxx
     Subject: xxx
     Date: xxx
@@ -207,7 +207,7 @@ def parse_txt_file(file_path: str, target: str) -> list[dict]:
         if not is_from_target(from_field, target):
             continue
 
-        # 提取正文（去掉头部字段后的内容）
+        # 提取正文(去掉头部字段后的内容)
         body = re.sub(r"^(From|To|Subject|Date|CC|BCC):.*\n?", "", raw, flags=re.MULTILINE)
         body = body.strip()
 
@@ -228,10 +228,10 @@ def parse_txt_file(file_path: str, target: str) -> list[dict]:
 
 def classify_emails(emails: list[dict]) -> dict:
     """
-    对邮件按内容分类：
-    - 长邮件（正文 > 200 字）：技术方案、观点陈述
-    - 决策类：包含明确判断的邮件
-    - 日常沟通：短邮件
+    对邮件按内容分类:
+    - 长邮件(正文 > 200 字):技术方案,观点陈述
+    - 决策类:包含明确判断的邮件
+    - 日常沟通:短邮件
     """
     long_emails = []
     decision_emails = []
@@ -279,20 +279,20 @@ def classify_emails(emails: list[dict]) -> dict:
 
 
 def format_output(target: str, classified: dict) -> str:
-    """格式化输出，供 AI 分析使用"""
+    """格式化输出,供 AI 分析使用"""
     lines = [
         "# 邮件提取结果",
-        f"目标人物：{target}",
-        f"总邮件数：{classified['total_count']}",
+        f"目标人物:{target}",
+        f"总邮件数:{classified['total_count']}",
         "",
         "---",
         "",
-        "## 长邮件（技术方案/观点类，权重最高）",
+        "## 长邮件(技术方案/观点类,权重最高)",
         "",
     ]
 
     for e in classified["long_emails"]:
-        lines.append(f"**主题：{e['subject']}** [{e['date']}]")
+        lines.append(f"**主题:{e['subject']}** [{e['date']}]")
         lines.append(e["body"])
         lines.append("")
         lines.append("---")
@@ -304,35 +304,35 @@ def format_output(target: str, classified: dict) -> str:
     ]
 
     for e in classified["decision_emails"]:
-        lines.append(f"**主题：{e['subject']}** [{e['date']}]")
+        lines.append(f"**主题:{e['subject']}** [{e['date']}]")
         lines.append(e["body"])
         lines.append("")
 
     lines += [
         "---",
         "",
-        "## 日常沟通（风格参考）",
+        "## 日常沟通(风格参考)",
         "",
     ]
 
     for e in classified["daily_emails"][:30]:
-        lines.append(f"**{e['subject']}**：{e['body'][:200]}")
+        lines.append(f"**{e['subject']}**:{e['body'][:200]}")
         lines.append("")
 
     return "\n".join(lines)
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="解析邮件文件，提取目标人发出的邮件")
-    parser.add_argument("--file", required=True, help="输入文件路径（.eml / .mbox / .txt）")
-    parser.add_argument("--target", required=True, help="目标人物（邮箱地址或姓名）")
-    parser.add_argument("--output", default=None, help="输出文件路径（默认打印到 stdout）")
+    parser = argparse.ArgumentParser(description="解析邮件文件,提取目标人发出的邮件")
+    parser.add_argument("--file", required=True, help="输入文件路径(.eml / .mbox / .txt)")
+    parser.add_argument("--target", required=True, help="目标人物(邮箱地址或姓名)")
+    parser.add_argument("--output", default=None, help="输出文件路径(默认打印到 stdout)")
 
     args = parser.parse_args()
 
     file_path = Path(args.file)
     if not file_path.exists():
-        print(f"错误：文件不存在 {file_path}", file=sys.stderr)
+        print(f"错误:文件不存在 {file_path}", file=sys.stderr)
         sys.exit(1)
 
     suffix = file_path.suffix.lower()
@@ -345,8 +345,8 @@ def main() -> None:
         emails = parse_txt_file(str(file_path), args.target)
 
     if not emails:
-        print(f"警告：未找到来自 '{args.target}' 的邮件", file=sys.stderr)
-        print("提示：请检查目标名称/邮箱是否与文件中的 From 字段一致", file=sys.stderr)
+        print(f"警告:未找到来自 '{args.target}' 的邮件", file=sys.stderr)
+        print("提示:请检查目标名称/邮箱是否与文件中的 From 字段一致", file=sys.stderr)
 
     classified = classify_emails(emails)
     output = format_output(args.target, classified)
@@ -354,7 +354,7 @@ def main() -> None:
     if args.output:
         with open(args.output, "w", encoding="utf-8") as f:
             f.write(output)
-        print(f"已输出到 {args.output}，共 {len(emails)} 封邮件")
+        print(f"已输出到 {args.output},共 {len(emails)} 封邮件")
     else:
         print(output)
 

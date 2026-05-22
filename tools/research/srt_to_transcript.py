@@ -46,7 +46,7 @@ def clean_subtitle_text(content: str) -> str:
     for line in deduped:
         current.append(line)
         joined = " ".join(current)
-        if len(joined) >= 240 or re.search(r"[.!?。！？]$", line):
+        if len(joined) >= 240 or re.search(r"[.!?.!?]$", line):
             paragraphs.append(joined)
             current = []
     if current:

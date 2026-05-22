@@ -2,23 +2,23 @@
 """
 钉钉自动采集器
 
-输入同事姓名，自动：
-  1. 搜索钉钉用户，获取 userId
+输入同事姓名,自动:
+  1. 搜索钉钉用户,获取 userId
   2. 搜索他创建/编辑的文档和知识库内容
-  3. 拉取多维表格（如有）
-  4. 消息记录（API 不支持历史拉取，自动切换浏览器方案）
-  5. 输出统一格式，直接进 Tz2H-skill 分析流程
+  3. 拉取多维表格(如有)
+  4. 消息记录(API 不支持历史拉取,自动切换浏览器方案)
+  5. 输出统一格式,直接进 Tz2H-skill 分析流程
 
-钉钉限制说明：
-  钉钉 Open API 不提供历史消息拉取接口，
-  消息记录部分自动使用 Playwright 浏览器方案采集。
+钉钉限制说明:
+  钉钉 Open API 不提供历史消息拉取接口,
+  消息记录部分自动使用 Playwright 浏览器方案采集.
 
-前置：
+前置:
   uv sync --all-extras
   playwright install chromium
   python3 dingtalk_auto_collector.py --setup
 
-用法：
+用法:
   python3 dingtalk_auto_collector.py --name "张三" --output-dir ./knowledge/zhangsan
   python3 dingtalk_auto_collector.py --name "张三" --skip-messages   # 跳过消息采集
   python3 dingtalk_auto_collector.py --name "张三" --doc-limit 20
@@ -38,7 +38,7 @@ from typing import Optional
 try:
     import requests
 except ImportError:
-    print("错误：请先安装依赖：uv sync --all-extras", file=sys.stderr)
+    print("错误:请先安装依赖:uv sync --all-extras", file=sys.stderr)
     sys.exit(1)
 
 
@@ -51,7 +51,7 @@ API_BASE = "https://api.dingtalk.com"
 
 def load_config() -> dict:
     if not CONFIG_PATH.exists():
-        print("未找到配置，请先运行：python3 dingtalk_auto_collector.py --setup", file=sys.stderr)
+        print("未找到配置,请先运行:python3 dingtalk_auto_collector.py --setup", file=sys.stderr)
         sys.exit(1)
     return json.loads(CONFIG_PATH.read_text(encoding="utf-8"))
 
@@ -63,19 +63,19 @@ def save_config(config: dict) -> None:
 
 def setup_config() -> None:
     print("=== 钉钉自动采集配置 ===\n")
-    print("请前往 https://open-dev.dingtalk.com 创建企业内部应用，开通以下权限：\n")
-    print("  通讯录类：")
+    print("请前往 https://open-dev.dingtalk.com 创建企业内部应用,开通以下权限:\n")
+    print("  通讯录类:")
     print("    qyapi_get_member_detail     查询用户详情")
-    print("    Contact.User.mobile         读取用户手机号（可选）")
+    print("    Contact.User.mobile         读取用户手机号(可选)")
     print()
-    print("  消息类（可选，仅用于发消息，历史消息需浏览器方案）：")
+    print("  消息类(可选,仅用于发消息,历史消息需浏览器方案):")
     print("    qyapi_robot_sendmsg         机器人发消息")
     print()
-    print("  文档类：")
+    print("  文档类:")
     print("    Doc.WorkSpace.READ          读取工作空间")
     print("    Doc.File.READ               读取文件")
     print()
-    print("  多维表格：")
+    print("  多维表格:")
     print("    Bitable.Record.READ         读取记录")
     print()
 
@@ -85,7 +85,7 @@ def setup_config() -> None:
     config = {"app_key": app_key, "app_secret": app_secret}
     save_config(config)
     print(f"\n✅ 配置已保存到 {CONFIG_PATH}")
-    print("\n注意：消息记录采集需要 Playwright，请确认已安装：")
+    print("\n注意:消息记录采集需要 Playwright,请确认已安装:")
     print("  uv sync --all-extras && uv run playwright install chromium")
 
 
@@ -95,7 +95,7 @@ _token_cache: dict = {}
 
 
 def get_access_token(config: dict) -> str:
-    """获取钉钉 access_token，带缓存"""
+    """获取钉钉 access_token,带缓存"""
     now = time.time()
     if _token_cache.get("token") and _token_cache.get("expire", 0) > now + 60:
         return _token_cache["token"]
@@ -108,7 +108,7 @@ def get_access_token(config: dict) -> str:
     data = resp.json()
 
     if "accessToken" not in data:
-        print(f"获取 token 失败：{data}", file=sys.stderr)
+        print(f"获取 token 失败:{data}", file=sys.stderr)
         sys.exit(1)
 
     token = data["accessToken"]
@@ -144,7 +144,7 @@ def api_post(path: str, body: dict, config: dict) -> dict:
 
 def find_user(name: str, config: dict) -> Optional[dict]:
     """通过姓名搜索钉钉用户"""
-    print(f"  搜索用户：{name} ...", file=sys.stderr)
+    print(f"  搜索用户:{name} ...", file=sys.stderr)
 
     data = api_post(
         "/v1.0/contact/users/search",
@@ -155,29 +155,29 @@ def find_user(name: str, config: dict) -> Optional[dict]:
     users = data.get("list", []) or data.get("result", {}).get("list", [])
 
     if not users:
-        # 降级：通过部门遍历搜索
-        print("  API 搜索无结果，尝试遍历通讯录 ...", file=sys.stderr)
+        # 降级:通过部门遍历搜索
+        print("  API 搜索无结果,尝试遍历通讯录 ...", file=sys.stderr)
         users = search_users_by_dept(name, config)
 
     if not users:
-        print(f"  未找到用户：{name}", file=sys.stderr)
+        print(f"  未找到用户:{name}", file=sys.stderr)
         return None
 
     if len(users) == 1:
         u = users[0]
         print(
-            f"  找到用户：{u.get('name')}（{u.get('deptNameList', [''])[0] if isinstance(u.get('deptNameList'), list) else ''}）",
+            f"  找到用户:{u.get('name')}({u.get('deptNameList', [''])[0] if isinstance(u.get('deptNameList'), list) else ''})",
             file=sys.stderr,
         )
         return u
 
-    print(f"\n  找到 {len(users)} 个结果，请选择：")
+    print(f"\n  找到 {len(users)} 个结果,请选择:")
     for i, u in enumerate(users):
         dept = u.get("deptNameList", [""])
         dept_str = dept[0] if isinstance(dept, list) and dept else ""
         print(f"    [{i + 1}] {u.get('name')}  {dept_str}  {u.get('unionId', '')}")
 
-    choice = input("\n  选择编号（默认 1）：").strip() or "1"
+    choice = input("\n  选择编号(默认 1):").strip() or "1"
     try:
         return users[int(choice) - 1]
     except (ValueError, IndexError):
@@ -185,7 +185,7 @@ def find_user(name: str, config: dict) -> Optional[dict]:
 
 
 def search_users_by_dept(name: str, config: dict, dept_id: int = 1, depth: int = 0) -> list:
-    """递归遍历部门搜索用户（深度限制 3 层）"""
+    """递归遍历部门搜索用户(深度限制 3 层)"""
     if depth > 3:
         return []
 
@@ -229,7 +229,7 @@ def search_docs_by_user(user_id: str, name: str, doc_limit: int, config: dict) -
     """搜索用户创建的文档"""
     print(f"  搜索 {name} 的文档 ...", file=sys.stderr)
 
-    # 方式一：全局搜索
+    # 方式一:全局搜索
     data = api_post(
         "/v1.0/doc/search",
         {
@@ -245,7 +245,7 @@ def search_docs_by_user(user_id: str, name: str, doc_limit: int, config: dict) -
 
     for item in items:
         creator_id = item.get("creatorId", "") or item.get("creator", {}).get("userId", "")
-        # 过滤：只保留目标用户创建的
+        # 过滤:只保留目标用户创建的
         if user_id and creator_id and creator_id != user_id:
             continue
         docs.append(
@@ -260,8 +260,8 @@ def search_docs_by_user(user_id: str, name: str, doc_limit: int, config: dict) -
         )
 
     if not docs:
-        # 方式二：遍历工作空间找文档
-        print("  搜索无结果，遍历工作空间 ...", file=sys.stderr)
+        # 方式二:遍历工作空间找文档
+        print("  搜索无结果,遍历工作空间 ...", file=sys.stderr)
         workspaces = list_workspaces(config)
         for ws in workspaces[:5]:  # 最多查 5 个空间
             ws_id = ws.get("spaceId") or ws.get("workspaceId")
@@ -293,7 +293,7 @@ def search_docs_by_user(user_id: str, name: str, doc_limit: int, config: dict) -
 
 def fetch_doc_content(doc_id: str, space_id: str, config: dict) -> str:
     """拉取单篇文档的文本内容"""
-    # 方式一：直接获取文档内容
+    # 方式一:直接获取文档内容
     data = api_get(
         f"/v1.0/doc/workspaces/{space_id}/files/{doc_id}/content",
         {},
@@ -311,7 +311,7 @@ def fetch_doc_content(doc_id: str, space_id: str, config: dict) -> str:
     if content:
         return content
 
-    # 方式二：获取下载链接后下载
+    # 方式二:获取下载链接后下载
     dl_data = api_get(
         f"/v1.0/doc/workspaces/{space_id}/files/{doc_id}/download",
         {},
@@ -338,8 +338,8 @@ def collect_docs(user: dict, doc_limit: int, config: dict) -> str:
         return f"# 文档内容\n\n未找到 {name} 相关文档\n"
 
     lines = [
-        "# 文档内容（钉钉自动采集）",
-        f"目标：{name}",
+        "# 文档内容(钉钉自动采集)",
+        f"目标:{name}",
         f"共 {len(docs)} 篇",
         "",
     ]
@@ -353,18 +353,18 @@ def collect_docs(user: dict, doc_limit: int, config: dict) -> str:
         if not doc_id or not space_id:
             continue
 
-        print(f"  拉取文档：{title} ...", file=sys.stderr)
+        print(f"  拉取文档:{title} ...", file=sys.stderr)
         content = fetch_doc_content(doc_id, space_id, config)
 
         if not content or len(content.strip()) < 20:
-            print("    内容为空，跳过", file=sys.stderr)
+            print("    内容为空,跳过", file=sys.stderr)
             continue
 
         lines += [
             "---",
-            f"## 《{title}》",
-            f"链接：{url}",
-            f"创建人：{doc.get('creator', '')}",
+            f"## <{title}>",
+            f"链接:{url}",
+            f"创建人:{doc.get('creator', '')}",
             "",
             content.strip(),
             "",
@@ -410,7 +410,7 @@ def fetch_bitable_content(base_id: str, config: dict) -> str:
     sheets = sheets_data.get("sheets", []) or sheets_data.get("result", {}).get("sheets", [])
 
     if not sheets:
-        return "（多维表格为空或无权限）\n"
+        return "(多维表格为空或无权限)\n"
 
     lines = []
     for sheet in sheets:
@@ -435,7 +435,7 @@ def fetch_bitable_content(base_id: str, config: dict) -> str:
             "records", []
         )
 
-        lines.append(f"### 表：{sheet_name}")
+        lines.append(f"### 表:{sheet_name}")
         lines.append("")
 
         if fields:
@@ -469,8 +469,8 @@ def collect_bitables(user: dict, config: dict) -> str:
         return f"# 多维表格\n\n未找到 {name} 的多维表格\n"
 
     lines = [
-        "# 多维表格（钉钉自动采集）",
-        f"目标：{name}",
+        "# 多维表格(钉钉自动采集)",
+        f"目标:{name}",
         f"共 {len(tables)} 个",
         "",
     ]
@@ -478,12 +478,12 @@ def collect_bitables(user: dict, config: dict) -> str:
     for t in tables:
         title = t.get("title", "无标题")
         doc_id = t.get("docId", "")
-        print(f"  拉取多维表格：{title} ...", file=sys.stderr)
+        print(f"  拉取多维表格:{title} ...", file=sys.stderr)
 
         content = fetch_bitable_content(doc_id, config)
         lines += [
             "---",
-            f"## 《{title}》",
+            f"## <{title}>",
             "",
             content,
         ]
@@ -491,7 +491,7 @@ def collect_bitables(user: dict, config: dict) -> str:
     return "\n".join(lines)
 
 
-# ─── 消息记录（浏览器方案）────────────────────────────────────────────────────
+# ─── 消息记录(浏览器方案)────────────────────────────────────────────────────
 
 
 def get_default_chrome_profile() -> str:
@@ -519,12 +519,12 @@ def collect_messages_browser(
     except ImportError:
         return (
             "# 消息记录\n\n"
-            "⚠️  未安装 Playwright，无法采集消息记录。\n"
-            "请运行：uv sync --all-extras && uv run playwright install chromium\n"
+            "⚠️  未安装 Playwright,无法采集消息记录.\n"
+            "请运行:uv sync --all-extras && uv run playwright install chromium\n"
         )
 
     profile = chrome_profile or get_default_chrome_profile()
-    print(f"  启动浏览器抓取钉钉消息（{'无头' if headless else '有界面'}）...", file=sys.stderr)
+    print(f"  启动浏览器抓取钉钉消息({'无头' if headless else '有界面'})...", file=sys.stderr)
 
     messages = []
 
@@ -538,7 +538,7 @@ def collect_messages_browser(
                 viewport={"width": 1280, "height": 900},
             )
         except Exception as e:
-            return f"# 消息记录\n\n⚠️  无法启动浏览器：{e}\n"
+            return f"# 消息记录\n\n⚠️  无法启动浏览器:{e}\n"
 
         page = ctx.new_page()
 
@@ -552,9 +552,9 @@ def collect_messages_browser(
                 ctx.close()
                 return (
                     "# 消息记录\n\n"
-                    "⚠️  检测到未登录。请用 --show-browser 参数重新运行，在弹出窗口中登录钉钉。\n"
+                    "⚠️  检测到未登录.请用 --show-browser 参数重新运行,在弹出窗口中登录钉钉.\n"
                 )
-            print("  请在浏览器中登录钉钉，登录完成后按回车继续...", file=sys.stderr)
+            print("  请在浏览器中登录钉钉,登录完成后按回车继续...", file=sys.stderr)
             input()
 
         # 搜索目标联系人的消息
@@ -588,9 +588,9 @@ def collect_messages_browser(
                     time.sleep(2)
                     break
         except Exception as e:
-            print(f"  自动导航失败：{e}", file=sys.stderr)
+            print(f"  自动导航失败:{e}", file=sys.stderr)
             if not headless:
-                print(f"  请手动打开与「{name}」的对话，然后按回车继续...", file=sys.stderr)
+                print(f"  请手动打开与「{name}」的对话,然后按回车继续...", file=sys.stderr)
                 input()
 
         # 向上滚动加载历史消息
@@ -649,30 +649,30 @@ def collect_messages_browser(
     if not messages:
         return (
             "# 消息记录\n\n"
-            f"⚠️  未能自动提取 {name} 的消息。\n"
-            "可能原因：钉钉网页版 DOM 结构变化，或未找到对话。\n"
-            "建议手动截图聊天记录后上传。\n"
+            f"⚠️  未能自动提取 {name} 的消息.\n"
+            "可能原因:钉钉网页版 DOM 结构变化,或未找到对话.\n"
+            "建议手动截图聊天记录后上传.\n"
         )
 
     long_msgs = [m for m in messages if len(m.get("content", "")) > 50]
     short_msgs = [m for m in messages if len(m.get("content", "")) <= 50]
 
     lines = [
-        "# 消息记录（钉钉浏览器采集）",
-        f"目标：{name}",
+        "# 消息记录(钉钉浏览器采集)",
+        f"目标:{name}",
         f"共 {len(messages)} 条",
-        "注意：钉钉 API 不支持历史消息拉取，本内容通过浏览器采集",
+        "注意:钉钉 API 不支持历史消息拉取,本内容通过浏览器采集",
         "",
         "---",
         "",
-        "## 长消息（观点/决策/技术类）",
+        "## 长消息(观点/决策/技术类)",
         "",
     ]
     for m in long_msgs:
         lines.append(f"[{m.get('time', '')}] {m.get('content', '')}")
         lines.append("")
 
-    lines += ["---", "", "## 日常消息（风格参考）", ""]
+    lines += ["---", "", "## 日常消息(风格参考)", ""]
     for m in short_msgs[:300]:
         lines.append(f"[{m.get('time', '')}] {m.get('content', '')}")
 
@@ -695,21 +695,21 @@ def collect_all(
     output_dir.mkdir(parents=True, exist_ok=True)
     results = {}
 
-    print(f"\n🔍 开始采集（钉钉）：{name}\n", file=sys.stderr)
+    print(f"\n🔍 开始采集(钉钉):{name}\n", file=sys.stderr)
 
     # Step 1: 搜索用户
     user = find_user(name, config)
     if not user:
-        print(f"❌ 未找到用户：{name}", file=sys.stderr)
+        print(f"❌ 未找到用户:{name}", file=sys.stderr)
         sys.exit(1)
 
     print(
-        f"  用户 ID：{user.get('userId', '')}  部门：{user.get('deptNameList', [''])[0] if isinstance(user.get('deptNameList'), list) and user.get('deptNameList') else ''}",
+        f"  用户 ID:{user.get('userId', '')}  部门:{user.get('deptNameList', [''])[0] if isinstance(user.get('deptNameList'), list) and user.get('deptNameList') else ''}",
         file=sys.stderr,
     )
 
     # Step 2: 文档
-    print(f"\n📄 采集文档（上限 {doc_limit} 篇）...", file=sys.stderr)
+    print(f"\n📄 采集文档(上限 {doc_limit} 篇)...", file=sys.stderr)
     try:
         doc_content = collect_docs(user, doc_limit, config)
         doc_path = output_dir / "docs.txt"
@@ -717,7 +717,7 @@ def collect_all(
         results["docs"] = str(doc_path)
         print(f"  ✅ 文档 → {doc_path}", file=sys.stderr)
     except Exception as e:
-        print(f"  ⚠️  文档采集失败：{e}", file=sys.stderr)
+        print(f"  ⚠️  文档采集失败:{e}", file=sys.stderr)
 
     # Step 3: 多维表格
     print("\n📊 采集多维表格 ...", file=sys.stderr)
@@ -728,12 +728,12 @@ def collect_all(
         results["bitables"] = str(bt_path)
         print(f"  ✅ 多维表格 → {bt_path}", file=sys.stderr)
     except Exception as e:
-        print(f"  ⚠️  多维表格采集失败：{e}", file=sys.stderr)
+        print(f"  ⚠️  多维表格采集失败:{e}", file=sys.stderr)
 
-    # Step 4: 消息记录（浏览器方案）
+    # Step 4: 消息记录(浏览器方案)
     if not skip_messages:
-        print(f"\n📨 采集消息记录（浏览器方案，上限 {msg_limit} 条）...", file=sys.stderr)
-        print("  ℹ️  钉钉 API 不支持历史消息拉取，自动切换浏览器方案", file=sys.stderr)
+        print(f"\n📨 采集消息记录(浏览器方案,上限 {msg_limit} 条)...", file=sys.stderr)
+        print("  ℹ️  钉钉 API 不支持历史消息拉取,自动切换浏览器方案", file=sys.stderr)
         try:
             msg_content = collect_messages_browser(name, msg_limit, chrome_profile, headless)
             msg_path = output_dir / "messages.txt"
@@ -741,9 +741,9 @@ def collect_all(
             results["messages"] = str(msg_path)
             print(f"  ✅ 消息记录 → {msg_path}", file=sys.stderr)
         except Exception as e:
-            print(f"  ⚠️  消息采集失败：{e}", file=sys.stderr)
+            print(f"  ⚠️  消息采集失败:{e}", file=sys.stderr)
     else:
-        print("\n📨 跳过消息采集（--skip-messages）", file=sys.stderr)
+        print("\n📨 跳过消息采集(--skip-messages)", file=sys.stderr)
 
     # 写摘要
     summary = {
@@ -753,14 +753,14 @@ def collect_all(
         "department": user.get("deptNameList", []),
         "collected_at": datetime.now(timezone.utc).isoformat(),
         "files": results,
-        "notes": "消息记录通过浏览器采集，钉钉 API 不支持历史消息拉取",
+        "notes": "消息记录通过浏览器采集,钉钉 API 不支持历史消息拉取",
     }
     (output_dir / "collection_summary.json").write_text(
         json.dumps(summary, ensure_ascii=False, indent=2)
     )
 
     print(f"\n✅ 采集完成 → {output_dir}", file=sys.stderr)
-    print(f"   文件：{', '.join(results.keys())}", file=sys.stderr)
+    print(f"   文件:{', '.join(results.keys())}", file=sys.stderr)
     return results
 
 
@@ -769,12 +769,12 @@ def main() -> None:
     parser.add_argument("--setup", action="store_true", help="初始化配置")
     parser.add_argument("--name", help="同事姓名")
     parser.add_argument("--output-dir", default=None, help="输出目录")
-    parser.add_argument("--msg-limit", type=int, default=500, help="最多采集消息条数（默认 500）")
-    parser.add_argument("--doc-limit", type=int, default=20, help="最多采集文档篇数（默认 20）")
+    parser.add_argument("--msg-limit", type=int, default=500, help="最多采集消息条数(默认 500)")
+    parser.add_argument("--doc-limit", type=int, default=20, help="最多采集文档篇数(默认 20)")
     parser.add_argument("--skip-messages", action="store_true", help="跳过消息记录采集")
     parser.add_argument("--chrome-profile", default=None, help="Chrome Profile 路径")
     parser.add_argument(
-        "--show-browser", action="store_true", help="显示浏览器窗口（调试/首次登录）"
+        "--show-browser", action="store_true", help="显示浏览器窗口(调试/首次登录)"
     )
 
     args = parser.parse_args()

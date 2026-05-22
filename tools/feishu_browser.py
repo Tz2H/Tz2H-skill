@@ -1,20 +1,20 @@
 #!/usr/bin/env python3
 """
-飞书浏览器抓取器（Playwright 方案）
+飞书浏览器抓取器(Playwright 方案)
 
-复用本机 Chrome 登录态，无需任何 token，能访问你有权限的所有飞书内容。
+复用本机 Chrome 登录态,无需任何 token,能访问你有权限的所有飞书内容.
 
-支持：
-  - 飞书文档（docx/docs）
-  - 飞书知识库（wiki）
-  - 飞书表格（sheets）→ 导出为 CSV
-  - 飞书消息记录（指定群聊）
+支持:
+  - 飞书文档(docx/docs)
+  - 飞书知识库(wiki)
+  - 飞书表格(sheets)→ 导出为 CSV
+  - 飞书消息记录(指定群聊)
 
-安装：
+安装:
   uv sync --all-extras
   uv run playwright install chromium
 
-用法：
+用法:
   python3 feishu_browser.py --url "https://xxx.feishu.cn/wiki/xxx" --output out.txt
   python3 feishu_browser.py --url "https://xxx.feishu.cn/docx/xxx" --output out.txt
   python3 feishu_browser.py --chat "后端组" --target "张三" --limit 500 --output out.txt
@@ -62,8 +62,8 @@ def make_context(playwright: Any, chrome_profile: Optional[str], headless: bool)
         )
         return ctx
     except Exception as e:
-        print(f"⚠️  无法加载 Chrome Profile：{e}", file=sys.stderr)
-        print(f"   尝试的路径：{profile}", file=sys.stderr)
+        print(f"⚠️  无法加载 Chrome Profile:{e}", file=sys.stderr)
+        print(f"   尝试的路径:{profile}", file=sys.stderr)
         print("   请用 --chrome-profile 手动指定路径", file=sys.stderr)
         sys.exit(1)
 
@@ -86,7 +86,7 @@ def fetch_doc(page: Any, url: str) -> str:
     """抓取飞书文档或 Wiki 的文本内容"""
     page.goto(url, wait_until="domcontentloaded", timeout=30000)
 
-    # 等待编辑器加载（飞书文档渲染较慢）
+    # 等待编辑器加载(飞书文档渲染较慢)
     selectors = [
         ".docs-reader-content",
         ".lark-editor-content",
@@ -123,13 +123,13 @@ def fetch_doc(page: Any, url: str) -> str:
         except Exception:
             continue
 
-    # fallback：提取整个 body
+    # fallback:提取整个 body
     text = page.inner_text("body")
     return text.strip()
 
 
 def fetch_sheet(page: Any, url: str) -> str:
-    """抓取飞书表格，转为 CSV 格式"""
+    """抓取飞书表格,转为 CSV 格式"""
     page.goto(url, wait_until="domcontentloaded", timeout=30000)
 
     try:
@@ -175,14 +175,14 @@ def fetch_sheet(page: Any, url: str) -> str:
             lines.append(",".join(f'"{cell}"' for cell in row))
         return "\n".join(lines)
 
-    # fallback：直接提取文本
+    # fallback:直接提取文本
     return page.inner_text("body")
 
 
 def fetch_messages(page: Any, chat_name: str, target_name: str, limit: int = 500) -> str:
     """
-    抓取指定群聊中目标人物的消息记录。
-    需要先导航到飞书 Web 版消息页面。
+    抓取指定群聊中目标人物的消息记录.
+    需要先导航到飞书 Web 版消息页面.
     """
     # 打开飞书消息页
     page.goto(
@@ -210,8 +210,8 @@ def fetch_messages(page: Any, chat_name: str, target_name: str, limit: int = 500
                 result.click()
                 time.sleep(2)
     except Exception as e:
-        print(f"⚠️  自动搜索群聊失败：{e}", file=sys.stderr)
-        print(f"   请手动导航到「{chat_name}」群聊，然后按回车继续...", file=sys.stderr)
+        print(f"⚠️  自动搜索群聊失败:{e}", file=sys.stderr)
+        print(f"   请手动导航到「{chat_name}」群聊,然后按回车继续...", file=sys.stderr)
         input()
 
     # 向上滚动加载历史消息
@@ -277,7 +277,7 @@ def fetch_messages(page: Any, chat_name: str, target_name: str, limit: int = 500
     """)
 
     if not messages:
-        print("⚠️  未能自动提取消息，尝试提取页面文本", file=sys.stderr)
+        print("⚠️  未能自动提取消息,尝试提取页面文本", file=sys.stderr)
         return page.inner_text("body")
 
     # 按权重分类输出
@@ -285,14 +285,14 @@ def fetch_messages(page: Any, chat_name: str, target_name: str, limit: int = 500
     short_msgs = [m for m in messages if len(m.get("content", "")) <= 50]
 
     lines = [
-        "# 飞书消息记录（浏览器抓取）",
-        f"群聊：{chat_name}",
-        f"目标人物：{target_name}",
+        "# 飞书消息记录(浏览器抓取)",
+        f"群聊:{chat_name}",
+        f"目标人物:{target_name}",
         f"共 {len(messages)} 条消息",
         "",
         "---",
         "",
-        "## 长消息（观点/决策类）",
+        "## 长消息(观点/决策类)",
         "",
     ]
     for m in long_msgs:
@@ -307,35 +307,35 @@ def fetch_messages(page: Any, chat_name: str, target_name: str, limit: int = 500
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="飞书浏览器抓取器（复用 Chrome 登录态）")
+    parser = argparse.ArgumentParser(description="飞书浏览器抓取器(复用 Chrome 登录态)")
     parser.add_argument("--url", help="飞书文档/Wiki/表格链接")
-    parser.add_argument("--chat", help="群聊名称（抓取消息记录时使用）")
-    parser.add_argument("--target", help="目标人物姓名（只提取此人的消息）")
-    parser.add_argument("--limit", type=int, default=500, help="最多抓取消息条数（默认 500）")
-    parser.add_argument("--output", default=None, help="输出文件路径（默认打印到 stdout）")
+    parser.add_argument("--chat", help="群聊名称(抓取消息记录时使用)")
+    parser.add_argument("--target", help="目标人物姓名(只提取此人的消息)")
+    parser.add_argument("--limit", type=int, default=500, help="最多抓取消息条数(默认 500)")
+    parser.add_argument("--output", default=None, help="输出文件路径(默认打印到 stdout)")
     parser.add_argument(
-        "--chrome-profile", default=None, help="Chrome Profile 路径（默认自动检测）"
+        "--chrome-profile", default=None, help="Chrome Profile 路径(默认自动检测)"
     )
-    parser.add_argument("--headless", action="store_true", help="无头模式（不显示浏览器窗口）")
-    parser.add_argument("--show-browser", action="store_true", help="显示浏览器窗口（调试用）")
+    parser.add_argument("--headless", action="store_true", help="无头模式(不显示浏览器窗口)")
+    parser.add_argument("--show-browser", action="store_true", help="显示浏览器窗口(调试用)")
 
     args = parser.parse_args()
 
     if not args.url and not args.chat:
-        parser.error("请提供 --url（文档链接）或 --chat（群聊名称）")
+        parser.error("请提供 --url(文档链接)或 --chat(群聊名称)")
 
     try:
         from playwright.sync_api import sync_playwright
     except ImportError:
         print(
-            "错误：请先安装 Playwright：uv sync --all-extras && uv run playwright install chromium",
+            "错误:请先安装 Playwright:uv sync --all-extras && uv run playwright install chromium",
             file=sys.stderr,
         )
         sys.exit(1)
 
     headless = args.headless and not args.show_browser
 
-    print(f"启动浏览器（{'无头' if headless else '有界面'}模式）...", file=sys.stderr)
+    print(f"启动浏览器({'无头' if headless else '有界面'}模式)...", file=sys.stderr)
 
     with sync_playwright() as p:
         ctx = make_context(p, args.chrome_profile, headless=headless)
@@ -345,17 +345,17 @@ def main() -> None:
         page.goto("https://www.feishu.cn", wait_until="domcontentloaded", timeout=15000)
         time.sleep(2)
         if "login" in page.url.lower() or "signin" in page.url.lower():
-            print("⚠️  检测到未登录状态。", file=sys.stderr)
-            print("   请在打开的浏览器窗口中登录飞书，登录后按回车继续...", file=sys.stderr)
+            print("⚠️  检测到未登录状态.", file=sys.stderr)
+            print("   请在打开的浏览器窗口中登录飞书,登录后按回车继续...", file=sys.stderr)
             if headless:
-                print("   提示：请用 --show-browser 参数显示浏览器窗口以完成登录", file=sys.stderr)
+                print("   提示:请用 --show-browser 参数显示浏览器窗口以完成登录", file=sys.stderr)
                 sys.exit(1)
             input()
 
         # 根据任务类型执行
         if args.url:
             page_type = detect_page_type(args.url)
-            print(f"页面类型：{page_type}，开始抓取...", file=sys.stderr)
+            print(f"页面类型:{page_type},开始抓取...", file=sys.stderr)
 
             if page_type == "sheet":
                 content = fetch_sheet(page, args.url)
@@ -378,7 +378,7 @@ def main() -> None:
 
     if args.output:
         Path(args.output).write_text(content, encoding="utf-8")
-        print(f"✅ 已保存到 {args.output}（{len(content)} 字符）", file=sys.stderr)
+        print(f"✅ 已保存到 {args.output}({len(content)} 字符)", file=sys.stderr)
     else:
         print(content)
 

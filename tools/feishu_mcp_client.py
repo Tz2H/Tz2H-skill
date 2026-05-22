@@ -1,24 +1,24 @@
 #!/usr/bin/env python3
 """
-飞书 MCP 客户端封装（cso1z/Feishu-MCP 方案）
+飞书 MCP 客户端封装(cso1z/Feishu-MCP 方案)
 
-通过 Feishu MCP Server 读取文档、wiki、消息记录。
-适合：公司已授权的文档、有 App token 权限的内容。
+通过 Feishu MCP Server 读取文档,wiki,消息记录.
+适合:公司已授权的文档,有 App token 权限的内容.
 
-前置要求：
-  1. 安装 Feishu MCP：npm install -g feishu-mcp
-  2. 配置 App ID 和 App Secret（飞书开放平台创建企业自建应用）
-  3. 给应用开通必要权限（见下方 REQUIRED_PERMISSIONS）
+前置要求:
+  1. 安装 Feishu MCP:npm install -g feishu-mcp
+  2. 配置 App ID 和 App Secret(飞书开放平台创建企业自建应用)
+  3. 给应用开通必要权限(见下方 REQUIRED_PERMISSIONS)
 
-权限列表（飞书开放平台 → 权限管理 → 开通）：
+权限列表(飞书开放平台 → 权限管理 → 开通):
   - docs:doc:readonly          读取文档
   - wiki:wiki:readonly         读取知识库
   - im:message:readonly        读取消息
   - bitable:app:readonly       读取多维表格
   - sheets:spreadsheet:readonly 读取表格
 
-用法：
-  # 配置 token（一次性）
+用法:
+  # 配置 token(一次性)
   python3 feishu_mcp_client.py --setup
 
   # 读取文档
@@ -60,15 +60,15 @@ def save_config(config: dict) -> None:
 
 def setup_config() -> None:
     print("=== 飞书 MCP 配置 ===")
-    print("请前往飞书开放平台（open.feishu.cn）创建企业自建应用，获取以下信息：\n")
+    print("请前往飞书开放平台(open.feishu.cn)创建企业自建应用,获取以下信息:\n")
 
     app_id = input("App ID (cli_xxx): ").strip()
     app_secret = input("App Secret: ").strip()
 
-    print("\n配置方式选择：")
-    print("  [1] App Token（应用权限，需要在飞书后台开通对应权限）")
-    print("  [2] User Token（个人权限，能访问你本人有权限的所有内容，需要定期刷新）")
-    mode = input("选择 [1/2]，默认 1：").strip() or "1"
+    print("\n配置方式选择:")
+    print("  [1] App Token(应用权限,需要在飞书后台开通对应权限)")
+    print("  [2] User Token(个人权限,能访问你本人有权限的所有内容,需要定期刷新)")
+    mode = input("选择 [1/2],默认 1:").strip() or "1"
 
     config = {
         "app_id": app_id,
@@ -77,13 +77,13 @@ def setup_config() -> None:
     }
 
     if mode == "2":
-        print("\n获取 User Token：飞书开放平台 → OAuth 2.0 → 获取 user_access_token")
-        user_token = input("User Access Token (u-xxx)：").strip()
+        print("\n获取 User Token:飞书开放平台 → OAuth 2.0 → 获取 user_access_token")
+        user_token = input("User Access Token (u-xxx):").strip()
         config["user_token"] = user_token
-        print("注意：User Token 有效期约 2 小时，过期后需要重新配置")
+        print("注意:User Token 有效期约 2 小时,过期后需要重新配置")
 
     save_config(config)
-    print("\n✅ 配置完成！")
+    print("\n✅ 配置完成!")
 
 
 # ─── MCP 调用封装 ─────────────────────────────────────────────────────────────
@@ -91,8 +91,8 @@ def setup_config() -> None:
 
 def call_mcp(tool: str, params: dict, config: dict) -> dict:
     """
-    通过 npx 调用 feishu-mcp 工具。
-    feishu-mcp 支持 stdio 模式，直接 JSON 通信。
+    通过 npx 调用 feishu-mcp 工具.
+    feishu-mcp 支持 stdio 模式,直接 JSON 通信.
     """
     env = os.environ.copy()
     env["FEISHU_APP_ID"] = config.get("app_id", "")
@@ -123,11 +123,11 @@ def call_mcp(tool: str, params: dict, config: dict) -> dict:
             timeout=30,
         )
         if result.returncode != 0:
-            raise RuntimeError(f"MCP 调用失败：{result.stderr}")
+            raise RuntimeError(f"MCP 调用失败:{result.stderr}")
         return json.loads(result.stdout)
     except FileNotFoundError:
-        print("错误：未找到 npx，请先安装 Node.js", file=sys.stderr)
-        print("安装 Feishu MCP：npm install -g feishu-mcp", file=sys.stderr)
+        print("错误:未找到 npx,请先安装 Node.js", file=sys.stderr)
+        print("安装 Feishu MCP:npm install -g feishu-mcp", file=sys.stderr)
         sys.exit(1)
 
 
@@ -146,7 +146,7 @@ def extract_doc_token(url: str) -> tuple[str, str]:
         m = re.search(pattern, url)
         if m:
             return m.group(1), doc_type
-    raise ValueError(f"无法从 URL 解析文档 token：{url}")
+    raise ValueError(f"无法从 URL 解析文档 token:{url}")
 
 
 # ─── 功能函数 ─────────────────────────────────────────────────────────────────
@@ -163,7 +163,7 @@ def fetch_doc_via_mcp(url: str, config: dict) -> str:
     elif doc_type == "sheet":
         result = call_mcp("get_spreadsheet_content", {"spreadsheet_token": token}, config)
     else:
-        raise ValueError(f"不支持的文档类型：{doc_type}")
+        raise ValueError(f"不支持的文档类型:{doc_type}")
 
     # 提取 MCP 返回的内容
     if "result" in result:
@@ -176,7 +176,7 @@ def fetch_doc_via_mcp(url: str, config: dict) -> str:
         elif isinstance(content, str):
             return content
     elif "error" in result:
-        raise RuntimeError(f"MCP 返回错误：{result['error']}")
+        raise RuntimeError(f"MCP 返回错误:{result['error']}")
 
     return json.dumps(result, ensure_ascii=False, indent=2)
 
@@ -216,9 +216,9 @@ def fetch_messages_via_mcp(
     short_msgs = [m for m in messages if len(str(m.get("content", ""))) <= 50]
 
     lines = [
-        "# 飞书消息记录（MCP 方案）",
-        f"群聊 ID：{chat_id}",
-        f"目标人物：{target_name or '全部'}",
+        "# 飞书消息记录(MCP 方案)",
+        f"群聊 ID:{chat_id}",
+        f"目标人物:{target_name or '全部'}",
         f"共 {len(messages)} 条",
         "",
         "---",
@@ -230,14 +230,14 @@ def fetch_messages_via_mcp(
         sender = m.get("sender", {}).get("name", "")
         content = m.get("content", "")
         ts = m.get("create_time", "")
-        lines.append(f"[{ts}] {sender}：{content}")
+        lines.append(f"[{ts}] {sender}:{content}")
         lines.append("")
 
     lines += ["---", "", "## 日常消息", ""]
     for m in short_msgs[:200]:
         sender = m.get("sender", {}).get("name", "")
         content = m.get("content", "")
-        lines.append(f"{sender}：{content}")
+        lines.append(f"{sender}:{content}")
 
     return "\n".join(lines)
 
@@ -256,9 +256,9 @@ def list_wiki_docs(space_id: str, config: dict) -> str:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="飞书 MCP 客户端")
-    parser.add_argument("--setup", action="store_true", help="初始化配置（App ID / Secret）")
+    parser.add_argument("--setup", action="store_true", help="初始化配置(App ID / Secret)")
     parser.add_argument("--url", help="飞书文档/Wiki/表格链接")
-    parser.add_argument("--chat-id", help="群聊 ID（oc_xxx 格式）")
+    parser.add_argument("--chat-id", help="群聊 ID(oc_xxx 格式)")
     parser.add_argument("--target", help="目标人物姓名")
     parser.add_argument("--limit", type=int, default=500, help="最多获取消息数")
     parser.add_argument("--list-wiki", action="store_true", help="列出知识库文档")
@@ -273,17 +273,17 @@ def main() -> None:
 
     config = load_config()
     if not config:
-        print("错误：尚未配置，请先运行：python3 feishu_mcp_client.py --setup", file=sys.stderr)
+        print("错误:尚未配置,请先运行:python3 feishu_mcp_client.py --setup", file=sys.stderr)
         sys.exit(1)
 
     content = ""
 
     if args.url:
-        print(f"通过 MCP 读取：{args.url}", file=sys.stderr)
+        print(f"通过 MCP 读取:{args.url}", file=sys.stderr)
         content = fetch_doc_via_mcp(args.url, config)
 
     elif args.chat_id:
-        print(f"通过 MCP 读取消息：{args.chat_id}", file=sys.stderr)
+        print(f"通过 MCP 读取消息:{args.chat_id}", file=sys.stderr)
         content = fetch_messages_via_mcp(
             args.chat_id,
             args.target or "",
@@ -293,7 +293,7 @@ def main() -> None:
 
     elif args.list_wiki:
         if not args.space_id:
-            print("错误：--list-wiki 需要 --space-id", file=sys.stderr)
+            print("错误:--list-wiki 需要 --space-id", file=sys.stderr)
             sys.exit(1)
         content = list_wiki_docs(args.space_id, config)
 

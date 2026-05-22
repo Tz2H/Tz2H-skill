@@ -12,7 +12,7 @@ Critical usage rules:
   end up under knowledge/research/raw/.
 
 Transcription backend priority:
-1. faster-whisper (local, preferred — Apple Silicon friendly)
+1. faster-whisper (local, preferred - Apple Silicon friendly)
 2. openai-whisper (local fallback)
 3. OpenAI Whisper API (if OPENAI_API_KEY is set)
 
@@ -206,19 +206,15 @@ def transcribe(
     attempts: list[tuple[str, callable]] = []
 
     if backend in {"auto", "faster-whisper"}:
-        attempts.append(
-            (
-                "faster-whisper",
-                lambda: transcribe_with_faster_whisper(audio_path, model_name, language),
-            )
-        )
+        attempts.append((
+            "faster-whisper",
+            lambda: transcribe_with_faster_whisper(audio_path, model_name, language),
+        ))
     if backend in {"auto", "openai-whisper"}:
-        attempts.append(
-            (
-                "openai-whisper",
-                lambda: transcribe_with_openai_whisper(audio_path, model_name, language),
-            )
-        )
+        attempts.append((
+            "openai-whisper",
+            lambda: transcribe_with_openai_whisper(audio_path, model_name, language),
+        ))
     if backend in {"auto", "openai-api"}:
         attempts.append(("openai-api", lambda: transcribe_with_openai_api(audio_path, language)))
 
